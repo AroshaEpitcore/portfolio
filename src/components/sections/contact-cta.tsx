@@ -9,11 +9,13 @@ import { GlowingButton, Button } from "@/components/ui/button";
 interface ContactCTAProps {
   email?: string;
   availability?: string;
+  location?: string;
 }
 
 export function ContactCTA({
   email = "hello@example.com",
   availability = "Available for freelance projects",
+  location,
 }: ContactCTAProps) {
   const containerRef = useRef<HTMLElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
@@ -189,15 +191,17 @@ export function ContactCTA({
                 </motion.div>
 
                 {/* Location info */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={isInView ? { opacity: 1 } : {}}
-                  transition={{ duration: 0.5, delay: 0.8 }}
-                  className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground"
-                >
-                  <MapPin className="h-4 w-4" />
-                  <span>Based in Your City • Open to Remote Worldwide</span>
-                </motion.div>
+                {location && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={isInView ? { opacity: 1 } : {}}
+                    transition={{ duration: 0.5, delay: 0.8 }}
+                    className="mt-8 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    <span>{location}</span>
+                  </motion.div>
+                )}
               </div>
             </div>
           </div>

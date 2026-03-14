@@ -9,14 +9,6 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { GlowingButton, Button } from "@/components/ui/button";
 import { SparklesCore } from "@/components/ui/sparkles";
 
-// Static bright stars that are always visible
-const staticStars = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  x: Math.random() * 100,
-  y: Math.random() * 100,
-  size: Math.random() * 3 + 2,
-  delay: Math.random() * 3,
-}));
 
 interface HeroProps {
   name?: string;
@@ -26,8 +18,6 @@ interface HeroProps {
   heroImageUrl?: string;
 }
 
-const roles = ["Full Stack Developer", "UI/UX Designer", "Problem Solver", "Creative Thinker"];
-
 export function Hero({
   name = "John Doe",
   title = "Full Stack Developer",
@@ -35,13 +25,19 @@ export function Hero({
   resumeUrl,
   heroImageUrl = "https://inversweb.com/product/html/virtuo/assets/images/banner/banner-user-image-one.png",
 }: HeroProps) {
-  const [roleIndex, setRoleIndex] = React.useState(0);
+  const [staticStars, setStaticStars] = React.useState<Array<{ id: number; x: number; y: number; size: number; delay: number; duration: number }>>([]);
 
   React.useEffect(() => {
-    const interval = setInterval(() => {
-      setRoleIndex((prev) => (prev + 1) % roles.length);
-    }, 3000);
-    return () => clearInterval(interval);
+    setStaticStars(
+      Array.from({ length: 20 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 3 + 2,
+        delay: Math.random() * 3,
+        duration: 2 + Math.random() * 2,
+      }))
+    );
   }, []);
 
   return (
@@ -173,7 +169,7 @@ export function Hero({
                 scale: [1, 1.1, 1],
               }}
               transition={{
-                duration: 2 + Math.random() * 2,
+                duration: star.duration,
                 delay: star.delay,
                 repeat: Infinity,
                 ease: "easeInOut",
@@ -222,23 +218,16 @@ export function Hero({
                 </span>
               </motion.h1>
 
-              {/* Animated Role */}
+              {/* Job Title */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="mb-6 h-10 overflow-hidden sm:h-12"
+                className="mb-6"
               >
-                <motion.div
-                  key={roleIndex}
-                  initial={{ y: 40, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  exit={{ y: -40, opacity: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="text-xl font-semibold text-muted-foreground sm:text-2xl lg:text-3xl"
-                >
-                  {roles[roleIndex]}
-                </motion.div>
+                <p className="text-xl font-semibold text-muted-foreground sm:text-2xl lg:text-3xl">
+                  {title}
+                </p>
               </motion.div>
 
               {/* Bio */}

@@ -36,7 +36,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
           buttonVariants[variant],
           buttonSizes[size],
           className
@@ -58,7 +58,7 @@ const AnimatedButton = React.forwardRef<
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
         buttonVariants[variant],
         buttonSizes[size],
         className
@@ -78,7 +78,7 @@ const GlowingButton = ({
   return (
     <button
       className={cn(
-        "group relative inline-flex items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary to-accent px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105",
+        "group relative inline-flex cursor-pointer items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-primary to-accent px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105",
         className
       )}
       {...props}

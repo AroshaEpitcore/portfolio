@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ export default function NewProjectPage() {
   const router = useRouter();
   const supabase = createClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -69,7 +71,7 @@ export default function NewProjectPage() {
       slug: data.slug,
       short_description: data.short_description,
       long_description: data.long_description || null,
-      thumbnail_url: data.thumbnail_url || null,
+      thumbnail_url: thumbnailUrl || data.thumbnail_url || null,
       live_url: data.live_url || null,
       github_url: data.github_url || null,
       tech_stack: techStackArray,
@@ -244,20 +246,16 @@ export default function NewProjectPage() {
         >
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Thumbnail URL</CardTitle>
+              <CardTitle className="text-base">Thumbnail</CardTitle>
             </CardHeader>
             <CardContent>
-              <Input
-                id="thumbnail_url"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                {...register("thumbnail_url")}
+              <ImageUpload
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+                folder="projects"
+                label="thumbnail"
+                aspectRatio="video"
               />
-              {errors.thumbnail_url && (
-                <p className="mt-1 text-sm text-red-500">
-                  {errors.thumbnail_url.message}
-                </p>
-              )}
             </CardContent>
           </Card>
 

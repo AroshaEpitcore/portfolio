@@ -44,24 +44,9 @@ const iconMap: { [key: string]: React.ElementType } = {
   mail: Mail,
 };
 
-// Placeholder data
-const placeholderContactInfo: Partial<ContactInfo> = {
-  email: "hello@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "San Francisco, CA",
-  availability: "Available for freelance projects",
-};
-
-const placeholderSocialLinks: Partial<SocialLink>[] = [
-  { id: "1", platform: "GitHub", url: "#", icon: "github" },
-  { id: "2", platform: "LinkedIn", url: "#", icon: "linkedin" },
-  { id: "3", platform: "Twitter", url: "#", icon: "twitter" },
-];
-
 export function ContactPage({ contactInfo, socialLinks }: ContactPageProps) {
-  const displayContactInfo = contactInfo || placeholderContactInfo;
-  const displaySocialLinks =
-    socialLinks && socialLinks.length > 0 ? socialLinks : placeholderSocialLinks;
+  const displayContactInfo: Partial<ContactInfo> = contactInfo ?? {};
+  const displaySocialLinks = socialLinks ?? [];
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"success" | "error" | null>(

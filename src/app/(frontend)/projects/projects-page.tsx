@@ -16,85 +16,8 @@ interface ProjectsPageProps {
   projects?: Project[];
 }
 
-// Placeholder projects
-const placeholderProjects: Partial<Project>[] = [
-  {
-    id: "1",
-    title: "E-Commerce Platform",
-    slug: "e-commerce",
-    short_description:
-      "A modern e-commerce platform built with Next.js, featuring real-time inventory management, secure payment processing with Stripe, and a comprehensive admin dashboard.",
-    thumbnail_url: "/images/project-1.jpg",
-    tech_stack: ["Next.js", "TypeScript", "Stripe", "PostgreSQL", "Tailwind CSS"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: true,
-  },
-  {
-    id: "2",
-    title: "Task Management App",
-    slug: "task-management",
-    short_description:
-      "A collaborative task management application with real-time updates, drag-and-drop functionality, team workspaces, and detailed analytics.",
-    thumbnail_url: "/images/project-2.jpg",
-    tech_stack: ["React", "Node.js", "Socket.io", "MongoDB", "Redux"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: true,
-  },
-  {
-    id: "3",
-    title: "AI Content Generator",
-    slug: "ai-content",
-    short_description:
-      "An AI-powered content generation tool that helps create blog posts, social media content, and marketing copy using advanced language models.",
-    thumbnail_url: "/images/project-3.jpg",
-    tech_stack: ["Python", "FastAPI", "OpenAI", "React", "PostgreSQL"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: true,
-  },
-  {
-    id: "4",
-    title: "Real Estate Platform",
-    slug: "real-estate",
-    short_description:
-      "A comprehensive real estate platform with property listings, virtual tours, mortgage calculator, and agent matching system.",
-    thumbnail_url: "/images/project-4.jpg",
-    tech_stack: ["Next.js", "Prisma", "PostgreSQL", "MapBox", "Cloudinary"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: false,
-  },
-  {
-    id: "5",
-    title: "Fitness Tracking App",
-    slug: "fitness-tracker",
-    short_description:
-      "A mobile-first fitness tracking application with workout plans, progress tracking, nutrition logging, and social features.",
-    thumbnail_url: "/images/project-5.jpg",
-    tech_stack: ["React Native", "Node.js", "MongoDB", "GraphQL"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: false,
-  },
-  {
-    id: "6",
-    title: "Learning Management System",
-    slug: "lms",
-    short_description:
-      "A full-featured learning management system with course creation, video streaming, quizzes, certificates, and progress tracking.",
-    thumbnail_url: "/images/project-6.jpg",
-    tech_stack: ["Next.js", "TypeScript", "Mux", "Stripe", "Prisma"],
-    live_url: "#",
-    github_url: "#",
-    is_featured: false,
-  },
-];
-
 export function ProjectsPage({ projects }: ProjectsPageProps) {
-  const displayProjects =
-    projects && projects.length > 0 ? projects : placeholderProjects;
+  const displayProjects = projects ?? [];
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTech, setSelectedTech] = useState<string | null>(null);

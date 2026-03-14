@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,42 +19,6 @@ interface FeaturedProjectsProps {
   projects?: Project[];
 }
 
-// Placeholder projects for when no data is available
-const placeholderProjects: Partial<Project>[] = [
-  {
-    id: "1",
-    title: "E-Commerce Platform",
-    slug: "e-commerce",
-    short_description:
-      "A modern e-commerce platform built with Next.js, featuring real-time inventory, secure payments, and an admin dashboard.",
-    thumbnail_url: "/images/project-1.jpg",
-    tech_stack: ["Next.js", "TypeScript", "Stripe", "PostgreSQL"],
-    live_url: "#",
-    github_url: "#",
-  },
-  {
-    id: "2",
-    title: "Task Management App",
-    slug: "task-app",
-    short_description:
-      "A collaborative task management application with real-time updates, drag-and-drop functionality, and team features.",
-    thumbnail_url: "/images/project-2.jpg",
-    tech_stack: ["React", "Node.js", "Socket.io", "MongoDB"],
-    live_url: "#",
-    github_url: "#",
-  },
-  {
-    id: "3",
-    title: "AI Content Generator",
-    slug: "ai-content",
-    short_description:
-      "An AI-powered content generation tool that helps create blog posts, social media content, and marketing copy.",
-    thumbnail_url: "/images/project-3.jpg",
-    tech_stack: ["Python", "FastAPI", "OpenAI", "React"],
-    live_url: "#",
-    github_url: "#",
-  },
-];
 
 const ProjectCard = ({
   project,
@@ -100,7 +64,7 @@ const ProjectCard = ({
         style={{ transformStyle: "preserve-3d" }}
       >
         {/* Gradient overlay on hover */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-transparent to-accent/0 opacity-0 transition-opacity duration-500 group-hover:opacity-10" />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/0 via-transparent to-accent/0 opacity-0 transition-opacity duration-500 group-hover:opacity-10" />
 
         {/* Featured badge */}
         <div className="absolute right-4 top-4 z-20">
@@ -201,7 +165,7 @@ const ProjectCard = ({
         </div>
 
         {/* Animated border */}
-        <div className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+        <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100">
           <div className="absolute inset-0 rounded-2xl border-2 border-primary/50" />
           <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-primary via-accent to-primary opacity-20 blur-sm" />
         </div>
@@ -211,6 +175,11 @@ const ProjectCard = ({
 };
 
 export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
+  if (!projects || projects.length === 0) return null;
+  return <FeaturedProjectsContent projects={projects} />;
+}
+
+function FeaturedProjectsContent({ projects }: { projects: Project[] }) {
   const containerRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
@@ -221,9 +190,6 @@ export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
   });
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
-
-  const displayProjects =
-    projects && projects.length > 0 ? projects : placeholderProjects;
 
   return (
     <section ref={containerRef} className="relative py-32 overflow-hidden">
@@ -304,7 +270,7 @@ export function FeaturedProjects({ projects }: FeaturedProjectsProps) {
 
         {/* Projects Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {displayProjects.slice(0, 3).map((project, index) => (
+          {projects.slice(0, 3).map((project, index) => (
             <ProjectCard key={project.id} project={project} index={index} />
           ))}
         </div>

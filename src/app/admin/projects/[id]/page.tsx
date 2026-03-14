@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { createClient } from "@/lib/supabase/client";
 import type { Project } from "@/types/database";
 
@@ -37,6 +38,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<Project | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
@@ -48,6 +50,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     const { data } = await supabase.from("projects").select("*").eq("id", id).single();
     if (data) {
       setProject(data);
+      setThumbnailUrl(data.thumbnail_url || null);
       reset({
         title: data.title,
         slug: data.slug,
@@ -72,7 +75,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       title: data.title, slug: data.slug,
       short_description: data.short_description,
       long_description: data.long_description || null,
-      thumbnail_url: data.thumbnail_url || null,
+      thumbnail_url: thumbnailUrl || data.thumbnail_url || null,
       live_url: data.live_url || null,
       github_url: data.github_url || null,
       tech_stack: techStackArray,
@@ -192,10 +195,15 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
           className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <Card>
-            <CardHeader><CardTitle className="text-base">Thumbnail URL</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">Thumbnail</CardTitle></CardHeader>
             <CardContent>
-              <Input type="url" placeholder="https://example.com/image.jpg" {...register("thumbnail_url")} />
-              {errors.thumbnail_url && <p className="mt-1 text-sm text-red-500">{errors.thumbnail_url.message}</p>}
+              <ImageUpload
+                value={thumbnailUrl}
+                onChange={setThumbnailUrl}
+                folder="projects"
+                label="thumbnail"
+                aspectRatio="video"
+              />
             </CardContent>
           </Card>
           <Card>

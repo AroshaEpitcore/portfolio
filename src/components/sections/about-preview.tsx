@@ -15,6 +15,7 @@ if (typeof window !== "undefined") {
 
 interface AboutPreviewProps {
   name?: string;
+  title?: string;
   avatarUrl?: string;
   shortBio?: string;
 }
@@ -48,6 +49,7 @@ const stats = [
 
 export function AboutPreview({
   name = "John Doe",
+  title,
   avatarUrl,
   shortBio = "A passionate full-stack developer with expertise in building modern web applications. I love turning complex problems into simple, beautiful solutions.",
 }: AboutPreviewProps) {
@@ -254,10 +256,7 @@ export function AboutPreview({
 
               <div>
                 <h3 className="text-2xl font-bold">{name}</h3>
-                <p className="text-primary">Full Stack Developer</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Based in Your City • Open to Remote
-                </p>
+                {title && <p className="text-primary">{title}</p>}
               </div>
             </div>
 

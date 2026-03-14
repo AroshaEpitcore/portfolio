@@ -55,21 +55,6 @@ const categoryGradients: { [key: string]: string } = {
   other: "from-gray-500 to-slate-500",
 };
 
-// Placeholder skills for when no data is available
-const placeholderSkills: Partial<Skill>[] = [
-  { id: "1", name: "React", category: "frontend", proficiency: 95, icon: "code" },
-  { id: "2", name: "TypeScript", category: "frontend", proficiency: 90, icon: "code" },
-  { id: "3", name: "Next.js", category: "frontend", proficiency: 92, icon: "globe" },
-  { id: "4", name: "Tailwind CSS", category: "frontend", proficiency: 95, icon: "palette" },
-  { id: "5", name: "Node.js", category: "backend", proficiency: 88, icon: "server" },
-  { id: "6", name: "PostgreSQL", category: "backend", proficiency: 85, icon: "database" },
-  { id: "7", name: "Python", category: "backend", proficiency: 82, icon: "terminal" },
-  { id: "8", name: "GraphQL", category: "backend", proficiency: 80, icon: "globe" },
-  { id: "9", name: "Docker", category: "tools", proficiency: 78, icon: "wrench" },
-  { id: "10", name: "Git", category: "tools", proficiency: 90, icon: "wrench" },
-  { id: "11", name: "AWS", category: "tools", proficiency: 72, icon: "server" },
-  { id: "12", name: "React Native", category: "mobile", proficiency: 75, icon: "smartphone" },
-];
 
 const categoryLabels: { [key: string]: string } = {
   frontend: "Frontend Development",
@@ -212,6 +197,11 @@ const CategorySection = ({
 };
 
 export function SkillsSection({ skills }: SkillsSectionProps) {
+  if (!skills || skills.length === 0) return null;
+  return <SkillsSectionContent skills={skills} />;
+}
+
+function SkillsSectionContent({ skills }: { skills: Skill[] }) {
   const containerRef = useRef<HTMLElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
@@ -222,11 +212,8 @@ export function SkillsSection({ skills }: SkillsSectionProps) {
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
 
-  const displaySkills =
-    skills && skills.length > 0 ? skills : placeholderSkills;
-
   // Group skills by category
-  const groupedSkills = displaySkills.reduce((acc, skill) => {
+  const groupedSkills = skills.reduce((acc, skill) => {
     const category = skill.category || "other";
     if (!acc[category]) {
       acc[category] = [];

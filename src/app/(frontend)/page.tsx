@@ -56,6 +56,7 @@ export default async function HomePage() {
       />
       <AboutPreview
         name={profile?.name || undefined}
+        title={profile?.title || undefined}
         avatarUrl={profile?.avatar_url || undefined}
         shortBio={profile?.bio || undefined}
       />
@@ -64,6 +65,7 @@ export default async function HomePage() {
       <ContactCTA
         email={contact?.email || undefined}
         availability={contact?.availability || undefined}
+        location={contact?.location || undefined}
       />
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useId } from "react";
+import React, { useId, useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -28,15 +28,19 @@ export const SparklesCore = ({
   const generatedId = useId();
   const actualId = id || generatedId;
 
-  const particles = React.useMemo(() => {
-    return Array.from({ length: particleDensity }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * (maxSize - minSize) + minSize,
-      duration: (Math.random() * 2 + 1) / speed,
-      delay: Math.random() * 2,
-    }));
+  const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number; size: number; duration: number; delay: number }>>([]);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: particleDensity }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * (maxSize - minSize) + minSize,
+        duration: (Math.random() * 2 + 1) / speed,
+        delay: Math.random() * 2,
+      }))
+    );
   }, [particleDensity, maxSize, minSize, speed]);
 
   return (

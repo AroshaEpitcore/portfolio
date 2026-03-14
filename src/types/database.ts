@@ -213,6 +213,85 @@ export interface Database {
           updated_at?: string;
         };
       };
+      services: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          icon: string | null;
+          price: string | null;
+          features: string[] | null;
+          is_featured: boolean;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          description?: string | null;
+          icon?: string | null;
+          price?: string | null;
+          features?: string[] | null;
+          is_featured?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          description?: string | null;
+          icon?: string | null;
+          price?: string | null;
+          features?: string[] | null;
+          is_featured?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+      };
+      education: {
+        Row: {
+          id: string;
+          institution: string;
+          degree: string;
+          field_of_study: string | null;
+          description: string | null;
+          start_date: string;
+          end_date: string | null;
+          is_current: boolean;
+          grade: string | null;
+          logo_url: string | null;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          institution: string;
+          degree: string;
+          field_of_study?: string | null;
+          description?: string | null;
+          start_date: string;
+          end_date?: string | null;
+          is_current?: boolean;
+          grade?: string | null;
+          logo_url?: string | null;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          institution?: string;
+          degree?: string;
+          field_of_study?: string | null;
+          description?: string | null;
+          start_date?: string;
+          end_date?: string | null;
+          is_current?: boolean;
+          grade?: string | null;
+          logo_url?: string | null;
+          order_index?: number;
+          created_at?: string;
+        };
+      };
       contact_submissions: {
         Row: {
           id: string;
@@ -262,3 +341,5 @@ export type Project = Database["public"]["Tables"]["projects"]["Row"];
 export type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
 export type ContactInfo = Database["public"]["Tables"]["contact_info"]["Row"];
 export type ContactSubmission = Database["public"]["Tables"]["contact_submissions"]["Row"];
+export type Education = Database["public"]["Tables"]["education"]["Row"];
+export type Service = Database["public"]["Tables"]["services"]["Row"];

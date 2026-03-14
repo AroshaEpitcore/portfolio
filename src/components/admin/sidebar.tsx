@@ -10,6 +10,8 @@ import {
   User,
   Wrench,
   Briefcase,
+  GraduationCap,
+  ConciergeBell,
   Link2,
   Mail,
   Settings,
@@ -49,6 +51,16 @@ const navItems = [
     name: "Experience",
     href: "/admin/experience",
     icon: Briefcase,
+  },
+  {
+    name: "Education",
+    href: "/admin/education",
+    icon: GraduationCap,
+  },
+  {
+    name: "Services",
+    href: "/admin/services",
+    icon: ConciergeBell,
   },
   {
     name: "Social Links",

@@ -5,11 +5,12 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, Loader2, User, Link as LinkIcon, FileText } from "lucide-react";
+import { Save, Loader2, User, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUpload } from "@/components/admin/image-upload";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 
@@ -28,6 +29,7 @@ export default function AdminProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -39,6 +41,7 @@ export default function AdminProfilePage() {
     const { data } = await supabase.from("profiles").select("*").single();
     if (data) {
       setProfile(data);
+      setAvatarUrl(data.avatar_url || null);
       reset({
         name: data.name || "",
         title: data.title || "",
@@ -56,7 +59,7 @@ export default function AdminProfilePage() {
       name: data.name,
       title: data.title,
       bio: data.bio,
-      avatar_url: data.avatar_url || null,
+      avatar_url: avatarUrl || data.avatar_url || null,
       resume_url: data.resume_url || null,
       updated_at: new Date().toISOString(),
     };
@@ -139,12 +142,17 @@ export default function AdminProfilePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <LinkIcon className="h-4 w-4" /> Avatar URL
+                <User className="h-4 w-4" /> Avatar Photo
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Input type="url" placeholder="https://example.com/avatar.jpg" {...register("avatar_url")} />
-              {errors.avatar_url && <p className="mt-1 text-sm text-red-500">{errors.avatar_url.message}</p>}
+              <ImageUpload
+                value={avatarUrl}
+                onChange={setAvatarUrl}
+                folder="avatars"
+                label="avatar"
+                aspectRatio="square"
+              />
             </CardContent>
           </Card>
 
@@ -160,18 +168,6 @@ export default function AdminProfilePage() {
             </CardContent>
           </Card>
         </motion.div>
-
-        {/* Avatar Preview */}
-        {profile?.avatar_url && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card>
-              <CardHeader><CardTitle className="text-base">Avatar Preview</CardTitle></CardHeader>
-              <CardContent>
-                <img src={profile.avatar_url} alt="Avatar" className="h-24 w-24 rounded-full object-cover ring-2 ring-border" />
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
 
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
           className="flex justify-end pb-6">
