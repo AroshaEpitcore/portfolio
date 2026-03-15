@@ -40,6 +40,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       skills: {
         Row: {
@@ -69,6 +70,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       experiences: {
         Row: {
@@ -104,6 +106,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       projects: {
         Row: {
@@ -157,6 +160,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       social_links: {
         Row: {
@@ -183,6 +187,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       contact_info: {
         Row: {
@@ -212,6 +217,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       services: {
         Row: {
@@ -247,6 +253,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       education: {
         Row: {
@@ -291,6 +298,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       contact_submissions: {
         Row: {
@@ -320,6 +328,7 @@ export interface Database {
           is_read?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       testimonials: {
         Row: {
@@ -358,6 +367,7 @@ export interface Database {
           order_index?: number;
           created_at?: string;
         };
+        Relationships: [];
       };
       blog_posts: {
         Row: {
@@ -405,6 +415,91 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
+      };
+      achievements: {
+        Row: {
+          id: string;
+          title: string;
+          issuer: string | null;
+          description: string | null;
+          issue_date: string | null;
+          expiry_date: string | null;
+          credential_url: string | null;
+          images: string[] | null;
+          category: string;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          issuer?: string | null;
+          description?: string | null;
+          issue_date?: string | null;
+          expiry_date?: string | null;
+          credential_url?: string | null;
+          images?: string[] | null;
+          category?: string;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          issuer?: string | null;
+          description?: string | null;
+          issue_date?: string | null;
+          expiry_date?: string | null;
+          credential_url?: string | null;
+          images?: string[] | null;
+          category?: string;
+          order_index?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      team_members: {
+        Row: {
+          id: string;
+          name: string;
+          role: string;
+          bio: string | null;
+          avatar_url: string | null;
+          linkedin_url: string | null;
+          github_url: string | null;
+          whatsapp_url: string | null;
+          is_active: boolean;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          role: string;
+          bio?: string | null;
+          avatar_url?: string | null;
+          linkedin_url?: string | null;
+          github_url?: string | null;
+          whatsapp_url?: string | null;
+          is_active?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          role?: string;
+          bio?: string | null;
+          avatar_url?: string | null;
+          linkedin_url?: string | null;
+          github_url?: string | null;
+          whatsapp_url?: string | null;
+          is_active?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+        Relationships: [];
       };
     };
     Views: {
@@ -414,6 +509,9 @@ export interface Database {
       [_ in never]: never;
     };
     Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
       [_ in never]: never;
     };
   };
@@ -430,30 +528,5 @@ export type Education = Database["public"]["Tables"]["education"]["Row"];
 export type Service = Database["public"]["Tables"]["services"]["Row"];
 export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
-
-export interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-  bio: string | null;
-  avatar_url: string | null;
-  linkedin_url: string | null;
-  github_url: string | null;
-  is_active: boolean;
-  order_index: number;
-  created_at: string;
-}
-
-export interface Achievement {
-  id: string;
-  title: string;
-  issuer: string | null;
-  description: string | null;
-  issue_date: string | null;
-  expiry_date: string | null;
-  credential_url: string | null;
-  images: string[] | null;
-  category: string;
-  order_index: number;
-  created_at: string;
-}
+export type Achievement = Database["public"]["Tables"]["achievements"]["Row"];
+export type TeamMember = Database["public"]["Tables"]["team_members"]["Row"];

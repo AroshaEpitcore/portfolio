@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -39,7 +39,7 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<FormData>,
   });
 
   useEffect(() => { fetchPost(); }, [id]);

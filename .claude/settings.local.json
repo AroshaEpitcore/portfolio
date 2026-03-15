@@ -22,7 +22,11 @@
       "WebFetch(domain:southlondoncollege.org)",
       "WebFetch(domain:epitcore.com)",
       "Bash(find /c/ravishanmga/portfolio/src -name \"*types*\" -o -name \"*database*\" | grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "WebFetch(domain:www.linkedin.com)"
+      "WebFetch(domain:www.linkedin.com)",
+      "Bash(grep -n \"folder=\" C:\\\\ravishanmga\\\\portfolio/src/app/admin/**/*.tsx 2>/dev/null | head -20)",
+      "Bash(npm run:*)",
+      "Bash(npx next:*)",
+      "Bash(taskkill /F /IM node.exe 2>&1; sleep 2 && npm run build 2>&1)"
     ]
   }
 }

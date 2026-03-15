@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
@@ -35,7 +35,7 @@ export default function NewBlogPostPage() {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema) as Resolver<FormData>,
     defaultValues: { read_time: 5, is_featured: false, is_published: false, tags: "" },
   });
 

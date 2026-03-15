@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus, Edit, Trash2, Save, Loader2, X, MessageSquare, Star } from "lucide-react";
@@ -35,7 +35,7 @@ export default function AdminTestimonialsPage() {
   const [showForm, setShowForm] = useState(false);
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } =
-    useForm<FormData>({ resolver: zodResolver(schema), defaultValues: { rating: 5, is_featured: false } });
+    useForm<FormData>({ resolver: zodResolver(schema) as Resolver<FormData>, defaultValues: { rating: 5, is_featured: false } });
 
   useEffect(() => { fetchItems(); }, []);
 

@@ -41,7 +41,7 @@ export function ShareButton({ url, title, text, className = "", size = "md" }: S
 
   const handleToggle = async () => {
     // On mobile with Web Share API — share natively directly
-    if (typeof navigator !== "undefined" && navigator.share && window.innerWidth < 768) {
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function" && window.innerWidth < 768) {
       await handleNativeShare();
       return;
     }

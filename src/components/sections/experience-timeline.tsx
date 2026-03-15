@@ -15,7 +15,7 @@ const fadeUp = {
   show: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
+    transition: { duration: 0.55, delay: i * 0.1, ease: "easeOut" as const },
   }),
 };
 
@@ -86,7 +86,7 @@ export function ExperienceTimeline({ experiences }: ExperienceTimelineProps) {
           <div
             ref={lineRef}
             className="absolute left-5 top-0 h-full w-px origin-top bg-gradient-to-b from-primary via-accent to-primary/20 sm:left-7"
-            style={{ scaleY: 0 }}
+            style={{ transform: "scaleY(0)" }}
           />
 
           <div className="space-y-6 pl-14 sm:pl-20">
