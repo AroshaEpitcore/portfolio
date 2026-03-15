@@ -7,6 +7,7 @@ import { ContactCTA } from "@/components/sections/contact-cta";
 import { GitHubReposSection } from "@/components/sections/github-repos";
 import { AchievementsSection } from "@/components/sections/achievements-section";
 import { TeamSection } from "@/components/sections/team-section";
+import { CurrentlySection } from "@/components/sections/currently-section";
 import { createClient } from "@/lib/supabase/server";
 import { getGitHubRepos } from "@/lib/github";
 
@@ -73,6 +74,7 @@ export default async function HomePage() {
         resumeUrl={profile?.resume_url || undefined}
         heroImageUrl={profile?.avatar_url || undefined}
       />
+      <CurrentlySection />
       <AboutPreview
         name={profile?.name || undefined}
         title={profile?.title || undefined}

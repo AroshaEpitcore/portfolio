@@ -4,18 +4,19 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
-  Briefcase,
-  Calendar,
   Code2,
   Download,
   GraduationCap,
   Award,
+  Calendar,
   MapPin,
   CheckCircle2,
   Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHero } from "@/components/sections/page-hero";
+import { StatCounter } from "@/components/ui/stat-counter";
+import { ExperienceTimeline } from "@/components/sections/experience-timeline";
 import { formatDateRange } from "@/lib/utils";
 import type { Profile, Experience, Skill, Education } from "@/types/database";
 
@@ -111,16 +112,9 @@ export function AboutPage({ profile, experiences, skills, education }: AboutPage
 
                 {/* Stats row */}
                 <div className="mb-7 grid grid-cols-3 gap-4 border-y border-border/50 py-5">
-                  {[
-                    { value: "3+", label: "Years Exp." },
-                    { value: "50+", label: "Projects" },
-                    { value: "100%", label: "Satisfaction" },
-                  ].map((s) => (
-                    <div key={s.label} className="text-center">
-                      <div className="text-2xl font-bold text-foreground">{s.value}</div>
-                      <div className="text-xs text-muted-foreground">{s.label}</div>
-                    </div>
-                  ))}
+                  <StatCounter value="3+" label="Years Exp." />
+                  <StatCounter value="50+" label="Projects" />
+                  <StatCounter value="100%" label="Satisfaction" />
                 </div>
 
                 {profile.resume_url && (
@@ -139,75 +133,7 @@ export function AboutPage({ profile, experiences, skills, education }: AboutPage
 
       {/* ── Experience ───────────────────────────────────────────── */}
       {displayExperiences.length > 0 && (
-        <section className="relative py-20">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-muted/0 via-muted/30 to-muted/0" />
-          <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-
-            {/* Section header */}
-            <motion.div
-              initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}
-              className="mb-12"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
-                  <Briefcase className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Experience</span>
-              </div>
-              <h2 className="text-3xl font-bold">Work History</h2>
-              <p className="mt-2 text-sm text-muted-foreground">My professional journey and the companies I&apos;ve worked with.</p>
-            </motion.div>
-
-            {/* Timeline */}
-            <div className="relative pl-6 sm:pl-8">
-              {/* Vertical line */}
-              <div className="absolute left-0 top-2 h-full w-px bg-gradient-to-b from-primary via-accent/50 to-transparent" />
-
-              <div className="space-y-8">
-                {displayExperiences.map((exp, i) => (
-                  <motion.div
-                    key={exp.id}
-                    custom={i}
-                    initial="hidden"
-                    whileInView="show"
-                    viewport={{ once: true }}
-                    variants={fadeUp}
-                    className="relative"
-                  >
-                    {/* Dot */}
-                    <div className="absolute -left-6 sm:-left-8 top-5 flex h-5 w-5 -translate-x-1/2 items-center justify-center">
-                      <div className="h-3 w-3 rounded-full border-2 border-primary bg-background" />
-                    </div>
-
-                    <div className="group rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/5">
-                      {/* Top accent on hover */}
-                      <div className="absolute inset-x-0 top-0 h-px rounded-t-2xl bg-gradient-to-r from-transparent via-primary/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-
-                      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-                        <div>
-                          <h3 className="text-base font-semibold">{exp.position}</h3>
-                          <p className="text-sm font-medium text-primary">{exp.company}</p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {formatDateRange(exp.start_date || "", exp.is_current ? null : exp.end_date)}
-                          {exp.is_current && (
-                            <span className="flex items-center gap-1 rounded-full bg-green-500/10 px-2 py-0.5 text-green-600 ring-1 ring-green-500/20 dark:text-green-400">
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Current
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {exp.description && (
-                        <p className="text-sm leading-relaxed text-muted-foreground">{exp.description}</p>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        <ExperienceTimeline experiences={displayExperiences} />
       )}
 
       {/* ── Education ────────────────────────────────────────────── */}
