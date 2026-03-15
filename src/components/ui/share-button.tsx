@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Share2, Link2, Twitter, Linkedin, Check, MessageCircle } from "lucide-react";
+import { Share2, Link2, Linkedin, Check, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -66,15 +66,6 @@ export function ShareButton({ url, title, text, className = "", size = "md" }: S
       icon: copied ? Check : Link2,
       action: copyLink,
       className: "hover:text-primary",
-    },
-    {
-      label: "Twitter / X",
-      icon: Twitter,
-      action: () => {
-        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(getUrl())}&text=${encodeURIComponent(title ?? "")}`, "_blank");
-        setOpen(false);
-      },
-      className: "hover:text-sky-400",
     },
     {
       label: "LinkedIn",

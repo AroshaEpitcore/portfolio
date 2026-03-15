@@ -12,7 +12,7 @@ import {
   Send,
   Github,
   Linkedin,
-  Twitter,
+  MessageCircle,
   CheckCircle,
   AlertCircle,
   Clock,
@@ -40,7 +40,7 @@ type ContactFormData = z.infer<typeof contactSchema>;
 const iconMap: { [key: string]: React.ElementType } = {
   github: Github,
   linkedin: Linkedin,
-  twitter: Twitter,
+  whatsapp: MessageCircle,
   mail: Mail,
 };
 

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
   Github,
   Linkedin,
-  Twitter,
+  MessageCircle,
   Mail,
   ArrowUpRight,
   MapPin,
@@ -32,7 +32,7 @@ const resourceLinks = [
 const socialLinks = [
   { name: "GitHub", href: GITHUB_PROFILE_URL, icon: Github },
   { name: "LinkedIn", href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", icon: Linkedin },
-  { name: "Twitter", href: "https://twitter.com", icon: Twitter },
+  { name: "WhatsApp", href: "https://wa.me/94762946381", icon: MessageCircle },
   { name: "Email", href: "mailto:hello@example.com", icon: Mail },
 ];
 

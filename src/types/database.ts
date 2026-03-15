@@ -431,6 +431,19 @@ export type Service = Database["public"]["Tables"]["services"]["Row"];
 export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  bio: string | null;
+  avatar_url: string | null;
+  linkedin_url: string | null;
+  github_url: string | null;
+  is_active: boolean;
+  order_index: number;
+  created_at: string;
+}
+
 export interface Achievement {
   id: string;
   title: string;

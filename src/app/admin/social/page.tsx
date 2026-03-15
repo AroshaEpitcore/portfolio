@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Edit, Trash2, Save, Loader2, X, Github, Linkedin, Twitter, Globe, ExternalLink } from "lucide-react";
+import { Plus, Edit, Trash2, Save, Loader2, X, Github, Linkedin, MessageCircle, Globe, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
@@ -24,14 +24,14 @@ type SocialFormData = z.infer<typeof socialSchema>;
 const platformIcons: Record<string, React.ElementType> = {
   github: Github,
   linkedin: Linkedin,
-  twitter: Twitter,
+  whatsapp: MessageCircle,
   default: Globe,
 };
 
 const platformColors: Record<string, string> = {
   github: "bg-zinc-800 text-white",
   linkedin: "bg-blue-600 text-white",
-  twitter: "bg-sky-500 text-white",
+  whatsapp: "bg-green-600 text-white",
   default: "bg-primary/10 text-primary",
 };
 

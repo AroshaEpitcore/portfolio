@@ -6,6 +6,7 @@ import { TestimonialsSection } from "@/components/sections/testimonials-section"
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { GitHubReposSection } from "@/components/sections/github-repos";
 import { AchievementsSection } from "@/components/sections/achievements-section";
+import { TeamSection } from "@/components/sections/team-section";
 import { createClient } from "@/lib/supabase/server";
 import { getGitHubRepos } from "@/lib/github";
 
@@ -13,7 +14,7 @@ async function getData() {
   try {
     const supabase = await createClient();
 
-    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult, githubRepos, achievementsResult] =
+    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult, githubRepos, achievementsResult, teamResult] =
       await Promise.all([
         supabase.from("profiles").select("*").single(),
         supabase
@@ -33,6 +34,7 @@ async function getData() {
           .order("order_index", { ascending: true }),
         getGitHubRepos(),
         supabase.from("achievements").select("*").order("order_index", { ascending: true }),
+        supabase.from("team_members").select("*").eq("is_active", true).order("order_index", { ascending: true }),
       ]);
 
     return {
@@ -43,6 +45,7 @@ async function getData() {
       testimonials: testimonialsResult.data,
       githubRepos,
       achievements: achievementsResult.data,
+      team: teamResult.data,
     };
   } catch {
     return {
@@ -53,12 +56,13 @@ async function getData() {
       testimonials: null,
       githubRepos: [],
       achievements: null,
+      team: null,
     };
   }
 }
 
 export default async function HomePage() {
-  const { profile, projects, skills, contact, testimonials, githubRepos, achievements } = await getData();
+  const { profile, projects, skills, contact, testimonials, githubRepos, achievements, team } = await getData();
 
   return (
     <>
@@ -79,6 +83,7 @@ export default async function HomePage() {
       <SkillsSection skills={skills || undefined} />
       <GitHubReposSection repos={githubRepos} />
       <AchievementsSection achievements={achievements || undefined} />
+      <TeamSection members={team || undefined} />
       <TestimonialsSection testimonials={testimonials || undefined} />
       <ContactCTA
         email={contact?.email || undefined}

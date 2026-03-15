@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { ArrowRight, Download, Github, Linkedin, Twitter, MousePointer2 } from "lucide-react";
+import { ArrowRight, Download, Github, Linkedin, MessageCircle, MousePointer2 } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
 import { GlowingButton, Button } from "@/components/ui/button";
 
@@ -202,7 +202,7 @@ export function Hero({
                 {[
                   { icon: Github, href: "https://github.com/AroshaRavishan", label: "GitHub" },
                   { icon: Linkedin, href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", label: "LinkedIn" },
-                  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+                  { icon: MessageCircle, href: "https://wa.me/94762946381", label: "WhatsApp" },
                 ].map((social) => (
                   <motion.a
                     key={social.label}

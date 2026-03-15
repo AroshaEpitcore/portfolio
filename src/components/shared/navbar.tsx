@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Home, User, FolderKanban, Mail, Github, Linkedin, Twitter, ConciergeBell, BookOpen, GitBranch } from "lucide-react";
+import { Menu, X, Home, User, FolderKanban, Mail, Github, Linkedin, MessageCircle, ConciergeBell, BookOpen, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -22,7 +22,7 @@ const navItems = [
 const socialLinks = [
   { icon: Github, href: "https://github.com/AroshaRavishan", label: "GitHub" },
   { icon: Linkedin, href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", label: "LinkedIn" },
-  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+  { icon: MessageCircle, href: "https://wa.me/94762946381", label: "WhatsApp" },
 ];
 
 export function Navbar() {

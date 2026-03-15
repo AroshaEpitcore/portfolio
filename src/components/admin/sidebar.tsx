@@ -20,6 +20,7 @@ import {
   MessageSquare,
   BookOpen,
   Trophy,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,11 @@ const navItems = [
     name: "Blog",
     href: "/admin/blog",
     icon: BookOpen,
+  },
+  {
+    name: "Team Members",
+    href: "/admin/team",
+    icon: Users,
   },
   {
     name: "Social Links",
