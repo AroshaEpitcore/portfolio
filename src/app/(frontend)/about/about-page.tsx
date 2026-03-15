@@ -12,7 +12,7 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LampSection } from "@/components/ui/lamp";
+import { PageHero } from "@/components/sections/page-hero";
 import { SkillBentoItem } from "@/components/ui/bento-grid";
 import { formatDateRange } from "@/lib/utils";
 import type { Profile, Experience, Skill, Education } from "@/types/database";
@@ -36,11 +36,10 @@ export function AboutPage({ profile, experiences, skills, education }: AboutPage
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section — touches navbar */}
-      <LampSection title="About Me" description="Get to know me better" className="pt-16" />
+      <PageHero badge="About Me" title="Who" titleAccent="I Am" description="Get to know me better — my background, experience, and what drives me." />
 
       {/* Profile Section */}
-      <section className="relative -mt-32 pb-24">
+      <section className="relative pb-24">
         <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

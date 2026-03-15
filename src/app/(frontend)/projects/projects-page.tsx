@@ -8,7 +8,7 @@ import { ExternalLink, Github, Search, Filter, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TechBadge, Badge } from "@/components/ui/badge";
-import { LampSection } from "@/components/ui/lamp";
+import { PageHero } from "@/components/sections/page-hero";
 import { AnimatedCard } from "@/components/ui/card";
 import type { Project } from "@/types/database";
 
@@ -52,15 +52,10 @@ export function ProjectsPage({ projects }: ProjectsPageProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Hero — touches navbar */}
-      <LampSection
-        title="My Projects"
-        description="A collection of my work and side projects"
-        className="pt-16"
-      />
+      <PageHero badge="Portfolio" title="My" titleAccent="Projects" description="A collection of my work, side projects, and experiments across different domains." />
 
       {/* Filters */}
-      <section className="relative -mt-32 pb-12">
+      <section className="relative pb-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { Check, Star, ArrowRight, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LampSection } from "@/components/ui/lamp";
+import { PageHero } from "@/components/sections/page-hero";
 import type { Service } from "@/types/database";
 
 interface ServicesPageProps {
@@ -19,9 +19,9 @@ export function ServicesPage({ services }: ServicesPageProps) {
 
   return (
     <div className="min-h-screen">
-      <LampSection title="Services" description="What I can build for you" className="pt-16" />
+      <PageHero badge="Services" title="What I" titleAccent="Offer" description="From concept to deployment — here's what I can build for you." />
 
-      <section className="relative -mt-32 pb-24">
+      <section className="relative pb-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
           {displayServices.length === 0 ? (

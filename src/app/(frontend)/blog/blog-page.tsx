@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Clock, Search, BookOpen, CalendarDays } from "lucide-react";
-import { LampSection } from "@/components/ui/lamp";
+import { PageHero } from "@/components/sections/page-hero";
 import { Input } from "@/components/ui/input";
 import type { BlogPost } from "@/types/database";
 
@@ -28,9 +28,9 @@ export function BlogPage({ posts }: BlogPageProps) {
 
   return (
     <div className="min-h-screen">
-      <LampSection title="Blog" description="Thoughts, tutorials, and insights" className="pt-16" />
+      <PageHero badge="Blog" title="Thoughts &amp;" titleAccent="Insights" description="Articles, tutorials, and thoughts on development, design, and tech." />
 
-      <section className="relative -mt-32 pb-24">
+      <section className="relative pb-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Search */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}

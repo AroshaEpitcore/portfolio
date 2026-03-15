@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
-import { LampSection } from "@/components/ui/lamp";
+import { PageHero } from "@/components/sections/page-hero";
 import { SpotlightCard } from "@/components/ui/spotlight";
 import type { ContactInfo, SocialLink } from "@/types/database";
 
@@ -117,15 +117,10 @@ export function ContactPage({ contactInfo, socialLinks }: ContactPageProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Hero — touches navbar */}
-      <LampSection
-        title="Get in Touch"
-        description="Have a project in mind? Let's talk about it."
-        className="pt-16"
-      />
+      <PageHero badge="Contact" title="Let's" titleAccent="Connect" description="Have a project in mind or just want to say hi? I'd love to hear from you." />
 
       {/* Contact Section */}
-      <section className="relative -mt-32 pb-24">
+      <section className="relative pb-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* Contact Info */}

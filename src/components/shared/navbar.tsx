@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Home, User, FolderKanban, Mail, Github, Linkedin, Twitter, ConciergeBell, BookOpen } from "lucide-react";
+import { Menu, X, Home, User, FolderKanban, Mail, Github, Linkedin, Twitter, ConciergeBell, BookOpen, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -13,13 +13,14 @@ const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "About", href: "/about", icon: User },
   { name: "Projects", href: "/projects", icon: FolderKanban },
+  { name: "GitHub", href: "/github", icon: GitBranch },
   { name: "Services", href: "/services", icon: ConciergeBell },
   { name: "Blog", href: "/blog", icon: BookOpen },
   { name: "Contact", href: "/contact", icon: Mail },
 ];
 
 const socialLinks = [
-  { icon: Github, href: "https://github.com", label: "GitHub" },
+  { icon: Github, href: "https://github.com/AroshaRavishan", label: "GitHub" },
   { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
   { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
 ];
@@ -49,8 +50,8 @@ export function Navbar() {
         className={cn(
           "fixed left-0 right-0 top-0 z-50 transition-all duration-300",
           isScrolled
-            ? "bg-background/80 shadow-sm backdrop-blur-lg"
-            : "bg-transparent"
+            ? "bg-background/85 shadow-sm backdrop-blur-lg border-b border-border/40"
+            : "bg-background/20 backdrop-blur-md border-b border-border/10"
         )}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">

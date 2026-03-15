@@ -4,13 +4,15 @@ import { FeaturedProjects } from "@/components/sections/featured-projects";
 import { SkillsSection } from "@/components/sections/skills-section";
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { ContactCTA } from "@/components/sections/contact-cta";
+import { GitHubReposSection } from "@/components/sections/github-repos";
 import { createClient } from "@/lib/supabase/server";
+import { getGitHubRepos } from "@/lib/github";
 
 async function getData() {
   try {
     const supabase = await createClient();
 
-    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult] =
+    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult, githubRepos] =
       await Promise.all([
         supabase.from("profiles").select("*").single(),
         supabase
@@ -18,8 +20,7 @@ async function getData() {
           .select("*")
           .eq("is_featured", true)
           .eq("is_published", true)
-          .order("order_index", { ascending: true })
-          .limit(3),
+          .order("order_index", { ascending: true }),
         supabase
           .from("skills")
           .select("*")
@@ -29,6 +30,7 @@ async function getData() {
           .from("testimonials")
           .select("*")
           .order("order_index", { ascending: true }),
+        getGitHubRepos(),
       ]);
 
     return {
@@ -37,6 +39,7 @@ async function getData() {
       skills: skillsResult.data,
       contact: contactResult.data,
       testimonials: testimonialsResult.data,
+      githubRepos,
     };
   } catch {
     return {
@@ -45,12 +48,13 @@ async function getData() {
       skills: null,
       contact: null,
       testimonials: null,
+      githubRepos: [],
     };
   }
 }
 
 export default async function HomePage() {
-  const { profile, projects, skills, contact, testimonials } = await getData();
+  const { profile, projects, skills, contact, testimonials, githubRepos } = await getData();
 
   return (
     <>
@@ -68,6 +72,7 @@ export default async function HomePage() {
       />
       <FeaturedProjects projects={projects || undefined} />
       <SkillsSection skills={skills || undefined} />
+      <GitHubReposSection repos={githubRepos} />
       <TestimonialsSection testimonials={testimonials || undefined} />
       <ContactCTA
         email={contact?.email || undefined}
