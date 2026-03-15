@@ -137,7 +137,7 @@ export function Hero({
               >
                 {[
                   { icon: Github, href: "https://github.com/AroshaRavishan", label: "GitHub" },
-                  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+                  { icon: Linkedin, href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", label: "LinkedIn" },
                   { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
                 ].map((social) => (
                   <motion.a

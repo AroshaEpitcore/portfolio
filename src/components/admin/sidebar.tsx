@@ -19,6 +19,7 @@ import {
   ChevronRight,
   MessageSquare,
   BookOpen,
+  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,11 @@ const navItems = [
     name: "Testimonials",
     href: "/admin/testimonials",
     icon: MessageSquare,
+  },
+  {
+    name: "Achievements",
+    href: "/admin/achievements",
+    icon: Trophy,
   },
   {
     name: "Blog",

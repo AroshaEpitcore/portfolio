@@ -5,6 +5,7 @@ import { SkillsSection } from "@/components/sections/skills-section";
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { GitHubReposSection } from "@/components/sections/github-repos";
+import { AchievementsSection } from "@/components/sections/achievements-section";
 import { createClient } from "@/lib/supabase/server";
 import { getGitHubRepos } from "@/lib/github";
 
@@ -12,7 +13,7 @@ async function getData() {
   try {
     const supabase = await createClient();
 
-    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult, githubRepos] =
+    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult, githubRepos, achievementsResult] =
       await Promise.all([
         supabase.from("profiles").select("*").single(),
         supabase
@@ -31,6 +32,7 @@ async function getData() {
           .select("*")
           .order("order_index", { ascending: true }),
         getGitHubRepos(),
+        supabase.from("achievements").select("*").order("order_index", { ascending: true }),
       ]);
 
     return {
@@ -40,6 +42,7 @@ async function getData() {
       contact: contactResult.data,
       testimonials: testimonialsResult.data,
       githubRepos,
+      achievements: achievementsResult.data,
     };
   } catch {
     return {
@@ -49,12 +52,13 @@ async function getData() {
       contact: null,
       testimonials: null,
       githubRepos: [],
+      achievements: null,
     };
   }
 }
 
 export default async function HomePage() {
-  const { profile, projects, skills, contact, testimonials, githubRepos } = await getData();
+  const { profile, projects, skills, contact, testimonials, githubRepos, achievements } = await getData();
 
   return (
     <>
@@ -74,6 +78,7 @@ export default async function HomePage() {
       <FeaturedProjects projects={projects || undefined} />
       <SkillsSection skills={skills || undefined} />
       <GitHubReposSection repos={githubRepos} />
+      <AchievementsSection achievements={achievements || undefined} />
       <TestimonialsSection testimonials={testimonials || undefined} />
       <ContactCTA
         email={contact?.email || undefined}

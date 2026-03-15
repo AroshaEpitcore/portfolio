@@ -59,6 +59,7 @@ src/
 │   │   ├── skills/               # Skills management
 │   │   ├── experience/           # Work experience management
 │   │   ├── education/            # Education / qualifications management
+│   │   ├── achievements/         # Achievements & certifications CRUD (multi-image upload)
 │   │   ├── services/             # Services / offerings management
 │   │   ├── testimonials/         # Testimonials CRUD
 │   │   ├── blog/                 # Blog CRUD (list, new, [id] edit)
@@ -80,6 +81,7 @@ src/
 │   │   ├── about-preview.tsx
 │   │   ├── featured-projects.tsx
 │   │   ├── skills-section.tsx
+│   │   ├── achievements-section.tsx  # Certifications, awards & achievements with lightbox
 │   │   ├── testimonials-section.tsx  # Client testimonials grid
 │   │   └── contact-cta.tsx
 │   ├── shared/                   # Navbar, Footer, ThemeToggle, Providers
@@ -283,7 +285,30 @@ CREATE TABLE blog_posts (
 
 ---
 
-### SQL 6 — Row Level Security — Public Read Policies
+### SQL 6 — Achievements Table
+
+```sql
+CREATE TABLE achievements (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  issuer TEXT,
+  description TEXT,
+  issue_date TEXT,
+  expiry_date TEXT,
+  credential_url TEXT,
+  images TEXT[] DEFAULT '{}',
+  category TEXT NOT NULL DEFAULT 'certification',
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+> `category` accepts: `certification` | `award` | `achievement`
+> `images` is a `TEXT[]` array — multiple certificate/badge images per entry, displayed in a lightbox on the frontend.
+
+---
+
+### SQL 7 — Row Level Security — Public Read Policies
 
 ```sql
 -- Enable RLS on all tables
@@ -298,16 +323,18 @@ ALTER TABLE education            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE testimonials         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE achievements         ENABLE ROW LEVEL SECURITY;
 
 -- Public read access for frontend visitors (anon key)
-CREATE POLICY "Public read profiles"     ON profiles     FOR SELECT USING (true);
-CREATE POLICY "Public read skills"       ON skills       FOR SELECT USING (true);
-CREATE POLICY "Public read experiences"  ON experiences  FOR SELECT USING (true);
-CREATE POLICY "Public read social_links" ON social_links FOR SELECT USING (true);
-CREATE POLICY "Public read contact_info" ON contact_info FOR SELECT USING (true);
-CREATE POLICY "Public read education"    ON education    FOR SELECT USING (true);
-CREATE POLICY "Public read services"     ON services     FOR SELECT USING (true);
-CREATE POLICY "Public read testimonials" ON testimonials FOR SELECT USING (true);
+CREATE POLICY "Public read profiles"      ON profiles      FOR SELECT USING (true);
+CREATE POLICY "Public read skills"        ON skills        FOR SELECT USING (true);
+CREATE POLICY "Public read experiences"   ON experiences   FOR SELECT USING (true);
+CREATE POLICY "Public read social_links"  ON social_links  FOR SELECT USING (true);
+CREATE POLICY "Public read contact_info"  ON contact_info  FOR SELECT USING (true);
+CREATE POLICY "Public read education"     ON education     FOR SELECT USING (true);
+CREATE POLICY "Public read services"      ON services      FOR SELECT USING (true);
+CREATE POLICY "Public read testimonials"  ON testimonials  FOR SELECT USING (true);
+CREATE POLICY "Public read achievements"  ON achievements  FOR SELECT USING (true);
 
 -- Only published projects visible to public (RLS enforced)
 CREATE POLICY "Public read published projects"
@@ -379,6 +406,11 @@ CREATE POLICY "Auth full access testimonials"
 
 CREATE POLICY "Auth full access blog_posts"
   ON blog_posts FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Auth full access achievements"
+  ON achievements FOR ALL
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 ```
@@ -575,6 +607,27 @@ Articles written by the portfolio owner. Shown on `/blog` and `/blog/[slug]`.
 
 ---
 
+### `achievements`
+Certifications, awards, and achievements shown as a filterable card grid on the homepage with an image lightbox.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK, auto |
+| title | TEXT | Achievement / certificate name |
+| issuer | TEXT | Issuing organisation e.g. "Amazon Web Services" |
+| description | TEXT | Brief description |
+| issue_date | TEXT | `YYYY-MM-DD` format |
+| expiry_date | TEXT | `YYYY-MM-DD` — null if no expiry |
+| credential_url | TEXT | Link to verify the credential online |
+| images | TEXT[] | Array of image URLs — multiple images per entry, displayed in lightbox |
+| category | TEXT | `certification` \| `award` \| `achievement` |
+| order_index | INTEGER | Sort order |
+| created_at | TIMESTAMPTZ | Auto |
+
+> The section auto-hides on the frontend if no achievements exist yet.
+
+---
+
 ### `social_links`
 Social media profiles shown in the navbar/footer.
 
@@ -628,6 +681,7 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `avatars/` | Profile avatar photo | `/admin/profile` |
 | `projects/` | Project thumbnail images | `/admin/projects/new` and `/admin/projects/[id]` |
 | `blog/` | Blog post thumbnail images | `/admin/blog/new` and `/admin/blog/[id]` |
+| `achievements/` | Certificate & achievement images (multi-upload) | `/admin/achievements` |
 
 - Component: `src/components/admin/image-upload.tsx`
 - Max file size: **5MB**
@@ -649,7 +703,7 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 
 | Route | Data fetched | Description |
 |---|---|---|
-| `/` | profiles, projects (featured), skills, testimonials, contact_info | Homepage with all sections |
+| `/` | profiles, projects (featured), skills, testimonials, achievements, contact_info | Homepage with all sections |
 | `/about` | profiles, experiences, education, skills | Full about page |
 | `/projects` | projects (`is_published=true`) | Searchable/filterable grid |
 | `/projects/[slug]` | projects (`is_published=true`, by slug) | Project detail page |
@@ -674,6 +728,7 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `/admin/skills` | `skills` |
 | `/admin/experience` | `experiences` |
 | `/admin/education` | `education` |
+| `/admin/achievements` | `achievements` |
 | `/admin/services` | `services` |
 | `/admin/testimonials` | `testimonials` |
 | `/admin/blog` | `blog_posts` |
@@ -693,6 +748,7 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `src/types/database.ts` | All table TypeScript types, exported as named types |
 | `src/components/admin/image-upload.tsx` | Reusable image uploader to Supabase Storage |
 | `src/components/admin/sidebar.tsx` | Admin nav — add new pages here |
+| `src/components/sections/achievements-section.tsx` | Achievements & certifications grid with category filter tabs and image lightbox (auto-hides if empty) |
 | `src/components/sections/testimonials-section.tsx` | Homepage testimonials grid (auto-hides if empty) |
 | `src/app/(frontend)/blog/[slug]/blog-content.tsx` | Client component that renders markdown with react-markdown |
 | `src/app/sitemap.ts` | Generates `/sitemap.xml` — includes static pages + projects + blog |
@@ -738,6 +794,39 @@ When you need to add a new table/section in future:
 
 ---
 
+## Seed Data — Arosha Ravishan (LinkedIn Import)
+
+Run these in Supabase SQL Editor to populate education and experience from LinkedIn.
+
+### Education
+
+```sql
+INSERT INTO education (institution, degree, field_of_study, start_date, end_date, is_current, grade, order_index) VALUES
+  ('National Institute of Business Management (NIBM - Sri Lanka)', 'Bachelor''s Degree', 'Computer Software Engineering', '2023-03-01', NULL, true, NULL, 1),
+  ('National Institute of Business Management (NIBM - Sri Lanka)', 'Higher Diploma in Software Engineering', 'Computer Science', '2021-04-01', NULL, false, NULL, 2),
+  ('National Institute of Business Management (NIBM - Sri Lanka)', 'Diploma in Software Engineering', 'Computer Science', '2020-03-01', '2021-03-01', false, '3.69', 3),
+  ('National Institute of Business Management (NIBM - Sri Lanka)', 'Certificate of Software Engineering', 'Computer Science', '2019-12-01', '2020-02-01', false, NULL, 4),
+  ('Vidyaloka College - Galle', 'Advanced Level', 'Information Technology', '2016-08-01', '2018-05-01', false, NULL, 5);
+```
+
+### Experience
+
+```sql
+INSERT INTO experiences (company, position, description, start_date, end_date, is_current, order_index) VALUES
+  ('Epitcore', 'Associate Frontend Developer', 'Full-time, on-site associate frontend developer role building and maintaining frontend applications.', '2024-08-01', NULL, true, 1),
+  ('Imperial Edutech - iMET', 'Junior Frontend Developer', 'Full-time, on-site junior frontend developer. Skills: Git, Bootstrap.', '2023-07-01', '2024-08-01', false, 2),
+  ('Imperial Edutech - iMET', 'Frontend Developer Intern', 'Frontend development internship based in London, England. Skills: Tailwind CSS, Git, React.js, and more.', '2023-01-01', '2023-09-01', false, 3);
+```
+
+### LinkedIn URL
+
+Updated in: `hero.tsx`, `navbar.tsx`, `footer.tsx`
+```
+https://www.linkedin.com/in/arosha-ravishan-89b459247/
+```
+
+---
+
 ## Important Notes
 
 - `order_index` on all list tables controls display order — **lower number = displayed first**
@@ -746,6 +835,7 @@ When you need to add a new table/section in future:
 - Dates in `experiences` and `education` are stored as `TEXT` (`YYYY-MM-DD`) and formatted client-side with `formatDateRange()` from `src/lib/utils.ts`
 - `features` (services), `tech_stack` (projects), and `tags` (blog_posts) are PostgreSQL `TEXT[]` arrays — entered in admin as comma-separated text and split on save
 - Blog `content` is stored as plain Markdown and rendered on the frontend with `react-markdown` inside `blog-content.tsx`
+- The `achievements-section.tsx` component returns `null` if the achievements array is empty — safe to leave the table empty until you add entries
 - The `testimonials-section.tsx` component returns `null` if the testimonials array is empty — safe to leave the table empty
 - All admin write operations use the browser Supabase client with the anon key — access is granted via RLS `auth.role() = 'authenticated'` policies, NOT the service role key
 - The service role key (`SUPABASE_SERVICE_ROLE_KEY`) bypasses RLS entirely — only used server-side in `createServiceClient()` when needed

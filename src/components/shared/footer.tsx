@@ -31,7 +31,7 @@ const resourceLinks = [
 
 const socialLinks = [
   { name: "GitHub", href: GITHUB_PROFILE_URL, icon: Github },
-  { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin },
+  { name: "LinkedIn", href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", icon: Linkedin },
   { name: "Twitter", href: "https://twitter.com", icon: Twitter },
   { name: "Email", href: "mailto:hello@example.com", icon: Mail },
 ];

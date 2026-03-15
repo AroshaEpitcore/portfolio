@@ -430,3 +430,17 @@ export type Education = Database["public"]["Tables"]["education"]["Row"];
 export type Service = Database["public"]["Tables"]["services"]["Row"];
 export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
+
+export interface Achievement {
+  id: string;
+  title: string;
+  issuer: string | null;
+  description: string | null;
+  issue_date: string | null;
+  expiry_date: string | null;
+  credential_url: string | null;
+  images: string[] | null;
+  category: string;
+  order_index: number;
+  created_at: string;
+}
