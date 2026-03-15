@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebFetch(domain:www.aspirex.uk)",
+      "WebFetch(domain:www.travelrunner.com)",
+      "Bash(npx tsc:*)",
+      "Bash(cat > \"C:\\\\ravishanmga\\\\portfolio\\\\README.md\" << 'ENDOFFILE'\nPLACEHOLDER\nENDOFFILE)",
+      "WebFetch(domain:www.inpeppero.com)",
+      "WebFetch(domain:ceylo.co.uk)",
+      "WebFetch(domain:www.study365.co.uk)",
+      "WebFetch(domain:www.imet.lk)",
+      "WebFetch(domain:www.epitcore.com)",
+      "WebFetch(domain:www.peiriscleaningsolutions.co.uk)",
+      "WebFetch(domain:villaarora.com)",
+      "WebFetch(domain:essencefits.com)",
+      "WebFetch(domain:maraebiz.com)",
+      "WebFetch(domain:southgatecollege.org)",
+      "WebFetch(domain:southlondoncollege.org)",
+      "WebFetch(domain:epitcore.com)",
+      "Bash(find /c/ravishanmga/portfolio/src -name \"*types*\" -o -name \"*database*\" | grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "WebFetch(domain:www.linkedin.com)"
+    ]
+  }
+}

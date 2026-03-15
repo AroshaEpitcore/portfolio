@@ -1,17 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
+import React, { useRef } from "react";
+import { motion, useInView } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Code2, Palette, Zap, Sparkles, Rocket, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 interface AboutPreviewProps {
   name?: string;
@@ -54,125 +48,23 @@ export function AboutPreview({
   shortBio = "A passionate full-stack developer with expertise in building modern web applications. I love turning complex problems into simple, beautiful solutions.",
 }: AboutPreviewProps) {
   const containerRef = useRef<HTMLElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const cardsRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start end", "end start"],
-  });
-
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
-
-  useEffect(() => {
-    if (!cardsRef.current) return;
-
-    const cards = cardsRef.current.querySelectorAll(".feature-card");
-
-    gsap.fromTo(
-      cards,
-      {
-        opacity: 0,
-        y: 80,
-        rotateX: -15,
-        scale: 0.9,
-      },
-      {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        scale: 1,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: cardsRef.current,
-          start: "top 80%",
-          toggleActions: "play none none reverse",
-        },
-      }
-    );
-
-    return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
-    };
-  }, []);
 
   return (
     <section
       ref={containerRef}
       className="relative overflow-hidden py-32"
     >
-      {/* Animated background elements */}
-      <motion.div
-        style={{ y: backgroundY }}
-        className="pointer-events-none absolute inset-0"
-      >
+      {/* Background */}
+      <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
         <div className="absolute left-0 top-1/4 h-[400px] w-[400px] rounded-full bg-primary/10 blur-[120px]" />
         <div className="absolute right-0 bottom-1/4 h-[400px] w-[400px] rounded-full bg-accent/10 blur-[120px]" />
-      </motion.div>
-
-      {/* Floating shapes and glow lines */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        {/* Glow lines */}
-        <motion.div
-          initial={{ x: "-100%", opacity: 0 }}
-          animate={{ x: "200%", opacity: [0, 0.6, 0.6, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: 1 }}
-          className="absolute top-1/3 left-0 h-[1px] w-1/4 bg-gradient-to-r from-transparent via-primary/50 to-transparent"
-        />
-        <motion.div
-          initial={{ x: "200%", opacity: 0 }}
-          animate={{ x: "-100%", opacity: [0, 0.5, 0.5, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear", delay: 3 }}
-          className="absolute bottom-1/3 right-0 h-[1px] w-1/3 bg-gradient-to-r from-transparent via-accent/40 to-transparent"
-        />
-
-        {/* Floating shapes */}
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 5, 0],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-[10%] top-[20%] h-20 w-20 rounded-full border border-primary/20"
-        />
-        <motion.div
-          animate={{
-            y: [0, 20, 0],
-            rotate: [0, -5, 0],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-[15%] top-[30%] h-32 w-32 rounded-xl border border-accent/20 rotate-12"
-        />
-        <motion.div
-          animate={{
-            y: [0, 15, 0],
-            x: [0, 10, 0],
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute left-[20%] bottom-[20%] h-16 w-16 rounded-lg bg-gradient-to-br from-primary/10 to-accent/10"
-        />
-
-        {/* Additional glow circles */}
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-[5%] bottom-[15%] h-40 w-40 rounded-full border border-primary/10"
-        />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <motion.div
-          style={{ y: textY }}
-          className="mb-20 text-center"
-        >
+        <div className="mb-20 text-center">
           <motion.span
             initial={{ opacity: 0, y: 20, scale: 0.9 }}
             animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
@@ -204,13 +96,12 @@ export function AboutPreview({
           >
             Transforming ideas into exceptional digital solutions with creativity and precision.
           </motion.p>
-        </motion.div>
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-20">
           {/* Left: About content with image */}
           <motion.div
-            ref={textRef}
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.7, delay: 0.3 }}
@@ -268,7 +159,7 @@ export function AboutPreview({
               className="group relative mb-8 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <p className="relative text-lg leading-relaxed text-muted-foreground">
+              <p className="relative text-md leading-relaxed text-muted-foreground">
                 {shortBio}
               </p>
             </motion.div>
@@ -324,7 +215,7 @@ export function AboutPreview({
           </motion.div>
 
           {/* Right: Feature cards */}
-          <div ref={cardsRef} className="space-y-6">
+          <div className="space-y-6">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (

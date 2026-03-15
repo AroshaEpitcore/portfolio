@@ -3,9 +3,70 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { ArrowRight, Download, Github, Linkedin, Twitter, MousePointer2 } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
 import { GlowingButton, Button } from "@/components/ui/button";
+
+function StarField() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const COUNT = 160;
+    const stars = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.4 + 0.2,
+      alpha: Math.random(),
+      speed: Math.random() * 0.004 + 0.002,
+      offset: Math.random() * Math.PI * 2,
+    }));
+
+    let frame: number;
+    let t = 0;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      t += 1;
+      for (const s of stars) {
+        const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(t * s.speed + s.offset));
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.85})`;
+        ctx.shadowBlur = s.r > 1 ? 6 : 0;
+        ctx.shadowColor = "rgba(180,180,255,0.8)";
+        ctx.fill();
+      }
+      frame = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 h-full w-full pointer-events-none"
+      style={{ opacity: 0.55 }}
+    />
+  );
+}
 
 
 interface HeroProps {
@@ -25,6 +86,9 @@ export function Hero({
 }: HeroProps) {
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
+      {/* Starfield */}
+      <StarField />
+
       {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
