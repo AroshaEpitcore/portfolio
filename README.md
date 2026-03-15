@@ -17,6 +17,7 @@ A full-stack personal portfolio with a content management admin dashboard, built
 | Toasts | Sonner |
 | Icons | Lucide React |
 | Theme | next-themes (dark/light) |
+| Blog Rendering | react-markdown |
 | Deployment | Vercel (recommended) |
 
 ---
@@ -34,6 +35,8 @@ NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 
 Get these from: **Supabase Dashboard → Settings → API**
 
+> `NEXT_PUBLIC_SITE_URL` is used by `sitemap.ts` and `robots.ts` to generate correct absolute URLs.
+
 ---
 
 ## Project Structure
@@ -42,10 +45,11 @@ Get these from: **Supabase Dashboard → Settings → API**
 src/
 ├── app/
 │   ├── (frontend)/               # Public-facing pages
-│   │   ├── page.tsx              # Home
+│   │   ├── page.tsx              # Home (hero, about preview, projects, skills, testimonials, CTA)
 │   │   ├── about/                # About page (profile, experience, education, skills)
 │   │   ├── projects/             # Projects list + [slug] detail page
 │   │   ├── services/             # Services/offerings page
+│   │   ├── blog/                 # Blog list + [slug] detail page (markdown rendered)
 │   │   └── contact/              # Contact form page
 │   ├── admin/                    # Protected admin dashboard
 │   │   ├── login/                # Auth login page
@@ -56,8 +60,12 @@ src/
 │   │   ├── experience/           # Work experience management
 │   │   ├── education/            # Education / qualifications management
 │   │   ├── services/             # Services / offerings management
+│   │   ├── testimonials/         # Testimonials CRUD
+│   │   ├── blog/                 # Blog CRUD (list, new, [id] edit)
 │   │   ├── social/               # Social links management
 │   │   └── contact/              # Contact info + submission inbox
+│   ├── sitemap.ts                # Auto-generated sitemap.xml (static + projects + blog)
+│   ├── robots.ts                 # robots.txt (blocks /admin and /api)
 │   └── api/
 │       └── contact/route.ts      # Contact form POST endpoint
 ├── components/
@@ -68,6 +76,12 @@ src/
 │   │   ├── stats-cards.tsx       # Dashboard stat cards
 │   │   └── data-table.tsx        # Generic data table
 │   ├── sections/                 # Homepage sections
+│   │   ├── hero.tsx
+│   │   ├── about-preview.tsx
+│   │   ├── featured-projects.tsx
+│   │   ├── skills-section.tsx
+│   │   ├── testimonials-section.tsx  # Client testimonials grid
+│   │   └── contact-cta.tsx
 │   ├── shared/                   # Navbar, Footer, ThemeToggle, Providers
 │   └── ui/                       # Reusable UI primitives
 ├── hooks/
@@ -295,13 +309,13 @@ CREATE POLICY "Public read education"    ON education    FOR SELECT USING (true)
 CREATE POLICY "Public read services"     ON services     FOR SELECT USING (true);
 CREATE POLICY "Public read testimonials" ON testimonials FOR SELECT USING (true);
 
--- Only published blog posts visible to public
-CREATE POLICY "Public read published blog_posts"
-  ON blog_posts FOR SELECT USING (is_published = true);
-
 -- Only published projects visible to public (RLS enforced)
 CREATE POLICY "Public read published projects"
   ON projects FOR SELECT USING (is_published = true);
+
+-- Only published blog posts visible to public (RLS enforced)
+CREATE POLICY "Public read published blog_posts"
+  ON blog_posts FOR SELECT USING (is_published = true);
 
 -- Anyone can submit a contact form
 CREATE POLICY "Public insert contact_submissions"
@@ -310,7 +324,7 @@ CREATE POLICY "Public insert contact_submissions"
 
 ---
 
-### SQL 5 — RLS Admin Policies (Full CRUD for Authenticated Users)
+### SQL 7 — RLS Admin Policies (Full CRUD for Authenticated Users)
 
 ```sql
 CREATE POLICY "Auth full access profiles"
@@ -371,7 +385,7 @@ CREATE POLICY "Auth full access blog_posts"
 
 ---
 
-### SQL 6 — Supabase Storage Bucket (Image Uploads)
+### SQL 8 — Supabase Storage Bucket (Image Uploads)
 
 ```sql
 -- Create public storage bucket named 'portfolio'
@@ -415,7 +429,7 @@ Portfolio owner's personal info. Always **update**, never insert a second row.
 | name | TEXT | Full name |
 | title | TEXT | Job title / headline |
 | bio | TEXT | About me paragraph(s) |
-| avatar_url | TEXT | Profile photo URL — uploaded to `portfolo` bucket `avatars/` folder |
+| avatar_url | TEXT | Profile photo URL — uploaded to `portfolio` bucket `avatars/` folder |
 | resume_url | TEXT | Link to PDF resume |
 | created_at | TIMESTAMPTZ | Auto |
 | updated_at | TIMESTAMPTZ | Set on save |
@@ -429,8 +443,8 @@ Technical skills grouped by category, displayed as a grid on the About page.
 |---|---|---|
 | id | UUID | PK, auto |
 | name | TEXT | e.g. "React" |
-| category | TEXT | `frontend` \| `backend` \| `tools` \| `mobile` \| `other` |
-| icon | TEXT | Lucide icon name (optional) |
+| category | TEXT | e.g. `Frameworks` \| `Languages` \| `Styling` \| `CMS` \| `Tools` |
+| icon | TEXT | Simple Icons name e.g. `SiReact`, `SiNextdotjs` |
 | proficiency | INTEGER | 0–100, renders as animated progress bar |
 | order_index | INTEGER | Sort order within category group |
 | created_at | TIMESTAMPTZ | Auto |
@@ -463,7 +477,7 @@ Portfolio work shown on the Projects page with individual detail pages.
 | title | TEXT | Project name |
 | slug | TEXT | **Unique** — URL path: `/projects/[slug]` |
 | short_description | TEXT | Card preview text |
-| long_description | TEXT | Detail page body (supports `## headings` and `- **bold**: text` lists) |
+| long_description | TEXT | Detail page body (Markdown supported) |
 | thumbnail_url | TEXT | Cover image — uploaded to `portfolio` bucket `projects/` folder |
 | images | TEXT[] | Gallery images array for detail page |
 | tech_stack | TEXT[] | e.g. `["React","Node.js","PostgreSQL"]` |
@@ -475,7 +489,7 @@ Portfolio work shown on the Projects page with individual detail pages.
 | created_at | TIMESTAMPTZ | Auto |
 | updated_at | TIMESTAMPTZ | Set on save |
 
-> `is_published = false` projects are completely invisible to public visitors even if URL is known directly.
+> `is_published = false` projects are completely invisible to public visitors even if the URL is known directly.
 
 ---
 
@@ -518,6 +532,49 @@ Freelance service offerings shown on the `/services` page.
 
 ---
 
+### `testimonials`
+Client reviews and feedback shown as a grid on the homepage.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK, auto |
+| name | TEXT | Client's full name |
+| role | TEXT | Client's job title e.g. "CEO" |
+| company | TEXT | Client's company name |
+| avatar_url | TEXT | Client photo URL (optional) |
+| content | TEXT | The testimonial text |
+| rating | INTEGER | 1–5 star rating, renders as star icons |
+| is_featured | BOOLEAN | Featured testimonials shown more prominently |
+| order_index | INTEGER | Sort order |
+| created_at | TIMESTAMPTZ | Auto |
+
+> The testimonials section on the homepage auto-hides if no testimonials exist yet.
+
+---
+
+### `blog_posts`
+Articles written by the portfolio owner. Shown on `/blog` and `/blog/[slug]`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | UUID | PK, auto |
+| title | TEXT | Article title |
+| slug | TEXT | **Unique** — URL path: `/blog/[slug]` (auto-filled from title in admin) |
+| excerpt | TEXT | Short summary shown on the blog list card |
+| content | TEXT | Full article body — **Markdown supported**, rendered with react-markdown |
+| thumbnail_url | TEXT | Cover image — uploaded to `portfolio` bucket `blog/` folder |
+| tags | TEXT[] | e.g. `["Next.js","Tutorial","React"]` — comma-separated in admin |
+| is_published | BOOLEAN | **Controls public visibility** — RLS hides drafts from public |
+| is_featured | BOOLEAN | Featured posts shown at top with larger card |
+| read_time | INTEGER | Estimated read time in minutes (shown on card and detail page) |
+| order_index | INTEGER | Sort order |
+| created_at | TIMESTAMPTZ | Auto |
+| updated_at | TIMESTAMPTZ | Set on save |
+
+> `is_published = false` blog posts are completely invisible to public visitors. Use drafts to work in progress.
+
+---
+
 ### `social_links`
 Social media profiles shown in the navbar/footer.
 
@@ -540,7 +597,7 @@ Contact details displayed on the Contact page. Always **update**, never insert a
 | id | UUID | PK, auto |
 | email | TEXT | Public contact email |
 | phone | TEXT | Public phone number |
-| location | TEXT | e.g. "London, UK" |
+| location | TEXT | e.g. "Colombo, Sri Lanka" |
 | availability | TEXT | e.g. "Available for freelance projects" |
 | created_at | TIMESTAMPTZ | Auto |
 | updated_at | TIMESTAMPTZ | Set on save |
@@ -570,6 +627,7 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 |---|---|---|
 | `avatars/` | Profile avatar photo | `/admin/profile` |
 | `projects/` | Project thumbnail images | `/admin/projects/new` and `/admin/projects/[id]` |
+| `blog/` | Blog post thumbnail images | `/admin/blog/new` and `/admin/blog/[id]` |
 
 - Component: `src/components/admin/image-upload.tsx`
 - Max file size: **5MB**
@@ -591,14 +649,16 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 
 | Route | Data fetched | Description |
 |---|---|---|
-| `/` | profiles, projects (featured), skills, experiences | Homepage |
+| `/` | profiles, projects (featured), skills, testimonials, contact_info | Homepage with all sections |
 | `/about` | profiles, experiences, education, skills | Full about page |
 | `/projects` | projects (`is_published=true`) | Searchable/filterable grid |
-| `/projects/[slug]` | projects (`is_published=true`, by slug) | Project detail, gallery, related |
+| `/projects/[slug]` | projects (`is_published=true`, by slug) | Project detail page |
 | `/services` | services | Services pricing page |
-| `/blog` | blog_posts (`is_published=true`) | Blog article list |
-| `/blog/[slug]` | blog_posts (`is_published=true`, by slug) | Full article with markdown content |
+| `/blog` | blog_posts (`is_published=true`) | Blog list with search, featured/standard split |
+| `/blog/[slug]` | blog_posts (`is_published=true`, by slug) | Full article with markdown rendering |
 | `/contact` | contact_info | Contact form |
+| `/sitemap.xml` | projects + blog_posts (published) | Auto-generated sitemap |
+| `/robots.txt` | — | Blocks /admin and /api, links to sitemap |
 
 ---
 
@@ -633,6 +693,10 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `src/types/database.ts` | All table TypeScript types, exported as named types |
 | `src/components/admin/image-upload.tsx` | Reusable image uploader to Supabase Storage |
 | `src/components/admin/sidebar.tsx` | Admin nav — add new pages here |
+| `src/components/sections/testimonials-section.tsx` | Homepage testimonials grid (auto-hides if empty) |
+| `src/app/(frontend)/blog/[slug]/blog-content.tsx` | Client component that renders markdown with react-markdown |
+| `src/app/sitemap.ts` | Generates `/sitemap.xml` — includes static pages + projects + blog |
+| `src/app/robots.ts` | Generates `/robots.txt` — disallows /admin and /api |
 | `middleware.ts` | Protects `/admin/*`, refreshes Supabase auth session |
 | `next.config.ts` | Allows `*.supabase.co` images via Next.js `<Image>` |
 
@@ -670,6 +734,7 @@ When you need to add a new table/section in future:
 8. **Server fetch** — Add `.from("[table]").select("*")` query to the relevant frontend `page.tsx` `getData()` function
 9. **Frontend component** — Add/update the frontend section or page to display the data
 10. **Navbar** — Add route to `navItems` in `src/components/shared/navbar.tsx` if it needs a top-level nav link
+11. **README** — Update this file with the new table SQL, table reference docs, and page maps
 
 ---
 
@@ -677,8 +742,11 @@ When you need to add a new table/section in future:
 
 - `order_index` on all list tables controls display order — **lower number = displayed first**
 - `profiles` and `contact_info` are **single-row tables** — always update the existing row, never insert a second one
-- `is_published` on `projects` is enforced by RLS — unpublished projects are completely invisible to public visitors even if the URL is known
+- `is_published` on `projects` and `blog_posts` is enforced by RLS — unpublished records are completely invisible to public visitors even if the URL is known
 - Dates in `experiences` and `education` are stored as `TEXT` (`YYYY-MM-DD`) and formatted client-side with `formatDateRange()` from `src/lib/utils.ts`
-- `features` (services) and `tech_stack` (projects) are PostgreSQL `TEXT[]` arrays — entered in admin as comma/newline separated text and split on save
+- `features` (services), `tech_stack` (projects), and `tags` (blog_posts) are PostgreSQL `TEXT[]` arrays — entered in admin as comma-separated text and split on save
+- Blog `content` is stored as plain Markdown and rendered on the frontend with `react-markdown` inside `blog-content.tsx`
+- The `testimonials-section.tsx` component returns `null` if the testimonials array is empty — safe to leave the table empty
 - All admin write operations use the browser Supabase client with the anon key — access is granted via RLS `auth.role() = 'authenticated'` policies, NOT the service role key
 - The service role key (`SUPABASE_SERVICE_ROLE_KEY`) bypasses RLS entirely — only used server-side in `createServiceClient()` when needed
+- `NEXT_PUBLIC_SITE_URL` must be set to your production domain for `sitemap.xml` and `robots.txt` to generate correct URLs
