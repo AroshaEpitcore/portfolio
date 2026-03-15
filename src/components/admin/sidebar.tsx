@@ -17,6 +17,8 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -61,6 +63,16 @@ const navItems = [
     name: "Services",
     href: "/admin/services",
     icon: ConciergeBell,
+  },
+  {
+    name: "Testimonials",
+    href: "/admin/testimonials",
+    icon: MessageSquare,
+  },
+  {
+    name: "Blog",
+    href: "/admin/blog",
+    icon: BookOpen,
   },
   {
     name: "Social Links",

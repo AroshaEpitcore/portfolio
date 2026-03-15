@@ -2,6 +2,7 @@ import { Hero } from "@/components/sections/hero";
 import { AboutPreview } from "@/components/sections/about-preview";
 import { FeaturedProjects } from "@/components/sections/featured-projects";
 import { SkillsSection } from "@/components/sections/skills-section";
+import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { ContactCTA } from "@/components/sections/contact-cta";
 import { createClient } from "@/lib/supabase/server";
 
@@ -9,7 +10,7 @@ async function getData() {
   try {
     const supabase = await createClient();
 
-    const [profileResult, projectsResult, skillsResult, contactResult] =
+    const [profileResult, projectsResult, skillsResult, contactResult, testimonialsResult] =
       await Promise.all([
         supabase.from("profiles").select("*").single(),
         supabase
@@ -24,6 +25,10 @@ async function getData() {
           .select("*")
           .order("order_index", { ascending: true }),
         supabase.from("contact_info").select("*").single(),
+        supabase
+          .from("testimonials")
+          .select("*")
+          .order("order_index", { ascending: true }),
       ]);
 
     return {
@@ -31,20 +36,21 @@ async function getData() {
       projects: projectsResult.data,
       skills: skillsResult.data,
       contact: contactResult.data,
+      testimonials: testimonialsResult.data,
     };
   } catch {
-    // Return null if Supabase is not configured
     return {
       profile: null,
       projects: null,
       skills: null,
       contact: null,
+      testimonials: null,
     };
   }
 }
 
 export default async function HomePage() {
-  const { profile, projects, skills, contact } = await getData();
+  const { profile, projects, skills, contact, testimonials } = await getData();
 
   return (
     <>
@@ -62,6 +68,7 @@ export default async function HomePage() {
       />
       <FeaturedProjects projects={projects || undefined} />
       <SkillsSection skills={skills || undefined} />
+      <TestimonialsSection testimonials={testimonials || undefined} />
       <ContactCTA
         email={contact?.email || undefined}
         availability={contact?.availability || undefined}

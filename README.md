@@ -29,6 +29,7 @@ Create a `.env.local` file in the project root:
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_ID.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_jwt_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_jwt_key
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 ```
 
 Get these from: **Supabase Dashboard → Settings → API**
@@ -227,7 +228,48 @@ CREATE TABLE services (
 
 ---
 
-### SQL 4 — Row Level Security — Public Read Policies
+### SQL 4 — Testimonials Table
+
+```sql
+CREATE TABLE testimonials (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  role TEXT,
+  company TEXT,
+  avatar_url TEXT,
+  content TEXT NOT NULL,
+  rating INTEGER DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
+  is_featured BOOLEAN DEFAULT FALSE,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+### SQL 5 — Blog Posts Table
+
+```sql
+CREATE TABLE blog_posts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  excerpt TEXT,
+  content TEXT,
+  thumbnail_url TEXT,
+  tags TEXT[],
+  is_published BOOLEAN DEFAULT FALSE,
+  is_featured BOOLEAN DEFAULT FALSE,
+  read_time INTEGER DEFAULT 5,
+  order_index INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+```
+
+---
+
+### SQL 6 — Row Level Security — Public Read Policies
 
 ```sql
 -- Enable RLS on all tables
@@ -240,6 +282,8 @@ ALTER TABLE contact_info         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contact_submissions  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE education            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE services             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE testimonials         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE blog_posts           ENABLE ROW LEVEL SECURITY;
 
 -- Public read access for frontend visitors (anon key)
 CREATE POLICY "Public read profiles"     ON profiles     FOR SELECT USING (true);
@@ -249,6 +293,11 @@ CREATE POLICY "Public read social_links" ON social_links FOR SELECT USING (true)
 CREATE POLICY "Public read contact_info" ON contact_info FOR SELECT USING (true);
 CREATE POLICY "Public read education"    ON education    FOR SELECT USING (true);
 CREATE POLICY "Public read services"     ON services     FOR SELECT USING (true);
+CREATE POLICY "Public read testimonials" ON testimonials FOR SELECT USING (true);
+
+-- Only published blog posts visible to public
+CREATE POLICY "Public read published blog_posts"
+  ON blog_posts FOR SELECT USING (is_published = true);
 
 -- Only published projects visible to public (RLS enforced)
 CREATE POLICY "Public read published projects"
@@ -306,6 +355,16 @@ CREATE POLICY "Auth full access education"
 
 CREATE POLICY "Auth full access services"
   ON services FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Auth full access testimonials"
+  ON testimonials FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Auth full access blog_posts"
+  ON blog_posts FOR ALL
   USING (auth.role() = 'authenticated')
   WITH CHECK (auth.role() = 'authenticated');
 ```
@@ -537,6 +596,8 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `/projects` | projects (`is_published=true`) | Searchable/filterable grid |
 | `/projects/[slug]` | projects (`is_published=true`, by slug) | Project detail, gallery, related |
 | `/services` | services | Services pricing page |
+| `/blog` | blog_posts (`is_published=true`) | Blog article list |
+| `/blog/[slug]` | blog_posts (`is_published=true`, by slug) | Full article with markdown content |
 | `/contact` | contact_info | Contact form |
 
 ---
@@ -554,6 +615,10 @@ Visitor messages sent through the contact form. Managed from `/admin/contact`.
 | `/admin/experience` | `experiences` |
 | `/admin/education` | `education` |
 | `/admin/services` | `services` |
+| `/admin/testimonials` | `testimonials` |
+| `/admin/blog` | `blog_posts` |
+| `/admin/blog/new` | `blog_posts` (INSERT) |
+| `/admin/blog/[id]` | `blog_posts` (UPDATE) |
 | `/admin/social` | `social_links` |
 | `/admin/contact` | `contact_info` + `contact_submissions` |
 

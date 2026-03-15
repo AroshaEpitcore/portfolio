@@ -321,6 +321,91 @@ export interface Database {
           created_at?: string;
         };
       };
+      testimonials: {
+        Row: {
+          id: string;
+          name: string;
+          role: string | null;
+          company: string | null;
+          avatar_url: string | null;
+          content: string;
+          rating: number;
+          is_featured: boolean;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          role?: string | null;
+          company?: string | null;
+          avatar_url?: string | null;
+          content: string;
+          rating?: number;
+          is_featured?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          role?: string | null;
+          company?: string | null;
+          avatar_url?: string | null;
+          content?: string;
+          rating?: number;
+          is_featured?: boolean;
+          order_index?: number;
+          created_at?: string;
+        };
+      };
+      blog_posts: {
+        Row: {
+          id: string;
+          title: string;
+          slug: string;
+          excerpt: string | null;
+          content: string | null;
+          thumbnail_url: string | null;
+          tags: string[] | null;
+          is_published: boolean;
+          is_featured: boolean;
+          read_time: number;
+          order_index: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          slug: string;
+          excerpt?: string | null;
+          content?: string | null;
+          thumbnail_url?: string | null;
+          tags?: string[] | null;
+          is_published?: boolean;
+          is_featured?: boolean;
+          read_time?: number;
+          order_index?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          slug?: string;
+          excerpt?: string | null;
+          content?: string | null;
+          thumbnail_url?: string | null;
+          tags?: string[] | null;
+          is_published?: boolean;
+          is_featured?: boolean;
+          read_time?: number;
+          order_index?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -343,3 +428,5 @@ export type ContactInfo = Database["public"]["Tables"]["contact_info"]["Row"];
 export type ContactSubmission = Database["public"]["Tables"]["contact_submissions"]["Row"];
 export type Education = Database["public"]["Tables"]["education"]["Row"];
 export type Service = Database["public"]["Tables"]["services"]["Row"];
+export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
+export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
