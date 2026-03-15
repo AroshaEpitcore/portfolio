@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TechBadge } from "@/components/ui/badge";
+import { ShareButton } from "@/components/ui/share-button";
 import { formatDate } from "@/lib/utils";
 import type { Project } from "@/types/database";
 
@@ -364,6 +365,7 @@ export function ProjectDetailPage({ project, relatedProjects }: ProjectDetailPag
                   </Button>
                 </a>
               )}
+              <ShareButton title={project.title} text={project.short_description ?? undefined} />
             </motion.div>
           </div>
         </motion.div>

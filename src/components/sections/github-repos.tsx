@@ -4,6 +4,7 @@ import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Github, Star, GitFork, ArrowRight, BookOpen, Code2, Clock } from "lucide-react";
 import { GlowingButton } from "@/components/ui/button";
+import { ShareButton } from "@/components/ui/share-button";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import type { GitHubRepo } from "@/lib/github";
@@ -24,12 +25,17 @@ function RepoCard({ repo, index }: { repo: GitHubRepo; index: number }) {
       initial={{ opacity: 0, y: 24 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08 }}
+      className="relative"
     >
+      {/* Share button — positioned outside the <a> to avoid nested interactive elements */}
+      <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()}>
+        <ShareButton url={repo.html_url} title={repo.name} text={repo.description ?? undefined} size="sm" />
+      </div>
       <a
         href={repo.html_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="group flex h-full flex-col rounded-2xl border border-border bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+        className="group flex h-full flex-col rounded-2xl border border-border bg-card p-5 pr-24 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
       >
         {/* Repo name */}
         <div className="mb-3 flex items-center justify-between gap-2">

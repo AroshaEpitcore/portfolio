@@ -1,9 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Award, CalendarDays, ExternalLink, ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { Award, CalendarDays, ExternalLink, ChevronLeft, ChevronRight, X, ZoomIn, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
 import type { Achievement } from "@/types/database";
+import { ShareButton } from "@/components/ui/share-button";
 
 interface Props {
   achievements?: Achievement[];
@@ -69,7 +71,7 @@ function AchievementCard({ item, index }: { item: Achievement; index: number }) 
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.5, delay: index * 0.07 }}
-        className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
+        className="group relative flex flex-col rounded-2xl border border-border bg-card transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5"
       >
         {/* Images */}
         {images.length > 0 && (
@@ -144,15 +146,27 @@ function AchievementCard({ item, index }: { item: Achievement; index: number }) 
         </div>
 
         {/* Footer */}
-        {item.credential_url && (
-          <div className="border-t border-border px-5 py-3">
+        <div className="flex items-center justify-between border-t border-border px-5 py-3">
+          {item.credential_url ? (
             <a href={item.credential_url} target="_blank" rel="noopener noreferrer"
               className={`inline-flex items-center gap-1.5 text-xs font-medium ${cfg.color} hover:underline`}>
               <ExternalLink className="h-3.5 w-3.5" />
               View Credential
             </a>
+          ) : <span />}
+          <div className="flex items-center gap-2">
+            <ShareButton
+              size="sm"
+              title={item.title}
+              text={item.issuer ? `${item.title} — ${item.issuer}` : item.title}
+              url={typeof window !== "undefined" ? `${window.location.origin}/achievements/${item.id}` : `/achievements/${item.id}`}
+            />
+            <Link href={`/achievements/${item.id}`}
+              className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-primary">
+              Details <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
-        )}
+        </div>
 
         {/* Glow on hover */}
         <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 ring-1 ring-primary/30 transition-opacity group-hover:opacity-100" />
@@ -176,7 +190,7 @@ export function AchievementsSection({ achievements }: Props) {
   const filtered = activeFilter === "all" ? achievements : achievements.filter((a) => a.category === activeFilter);
 
   return (
-    <section className="relative py-24 overflow-hidden">
+    <section id="achievements" className="relative py-24 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute left-1/4 top-0 h-[400px] w-[400px] rounded-full bg-primary/5 blur-[100px]" />
