@@ -1,13 +1,11 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Download, Github, Linkedin, Twitter, MousePointer2 } from "lucide-react";
 import { Spotlight } from "@/components/ui/spotlight";
 import { GlowingButton, Button } from "@/components/ui/button";
-import { SparklesCore } from "@/components/ui/sparkles";
 
 
 interface HeroProps {
@@ -23,53 +21,15 @@ export function Hero({
   title = "Full Stack Developer",
   bio = "I build beautiful, performant, and accessible web experiences using modern technologies.",
   resumeUrl,
-  heroImageUrl = "https://inversweb.com/product/html/virtuo/assets/images/banner/banner-user-image-one.png",
+  heroImageUrl = "/me.png",
 }: HeroProps) {
-  const [staticStars, setStaticStars] = React.useState<Array<{ id: number; x: number; y: number; size: number; delay: number; duration: number }>>([]);
-
-  React.useEffect(() => {
-    setStaticStars(
-      Array.from({ length: 20 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 3 + 2,
-        delay: Math.random() * 3,
-        duration: 2 + Math.random() * 2,
-      }))
-    );
-  }, []);
-
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
-      {/* Animated gradient orbs */}
+      {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            x: [0, 30, 0],
-            y: [0, -30, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]"
-        />
-        <motion.div
-          animate={{
-            x: [0, -20, 0],
-            y: [0, 40, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px]"
-        />
-        <motion.div
-          animate={{
-            x: [0, 20, 0],
-            y: [0, -20, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-20 left-1/3 h-[400px] w-[400px] rounded-full bg-primary/15 blur-[100px]"
-        />
+        <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-primary/20 blur-[120px]" />
+        <div className="absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-accent/20 blur-[120px]" />
+        <div className="absolute -bottom-20 left-1/3 h-[400px] w-[400px] rounded-full bg-primary/15 blur-[100px]" />
       </div>
 
       {/* Grid background */}
@@ -81,103 +41,6 @@ export function Hero({
         fill="var(--primary)"
       />
 
-      {/* Sparkles Background - smaller particles */}
-      <div className="absolute inset-0 h-full w-full pointer-events-none">
-        <SparklesCore
-          id="hero-sparkles-large"
-          background="transparent"
-          minSize={0.4}
-          maxSize={1.2}
-          particleDensity={40}
-          particleColor="#ffffff"
-          speed={0.5}
-        />
-      </div>
-
-      <div className="absolute inset-0 h-full w-full pointer-events-none opacity-50">
-        <SparklesCore
-          id="hero-sparkles-medium"
-          background="transparent"
-          minSize={0.2}
-          maxSize={0.8}
-          particleDensity={60}
-          particleColor="var(--primary)"
-          speed={0.6}
-        />
-      </div>
-
-      {/* Glowing lines design */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Diagonal glow line 1 */}
-        <motion.div
-          initial={{ x: "-100%", opacity: 0 }}
-          animate={{ x: "200%", opacity: [0, 1, 1, 0] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear", delay: 0 }}
-          className="absolute top-1/4 left-0 h-[1px] w-1/3 bg-gradient-to-r from-transparent via-primary/60 to-transparent rotate-12"
-        />
-        {/* Diagonal glow line 2 */}
-        <motion.div
-          initial={{ x: "200%", opacity: 0 }}
-          animate={{ x: "-100%", opacity: [0, 1, 1, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: 2 }}
-          className="absolute top-2/3 right-0 h-[1px] w-1/4 bg-gradient-to-r from-transparent via-accent/50 to-transparent -rotate-12"
-        />
-        {/* Vertical glow line */}
-        <motion.div
-          initial={{ y: "-100%", opacity: 0 }}
-          animate={{ y: "200%", opacity: [0, 0.8, 0.8, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "linear", delay: 4 }}
-          className="absolute top-0 left-1/4 w-[1px] h-1/3 bg-gradient-to-b from-transparent via-primary/40 to-transparent"
-        />
-        {/* Curved glow arc */}
-        <motion.div
-          animate={{ opacity: [0.2, 0.5, 0.2], scale: [1, 1.02, 1] }}
-          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 right-20 w-[300px] h-[300px] border border-primary/20 rounded-full"
-          style={{ borderWidth: "1px" }}
-        />
-        <motion.div
-          animate={{ opacity: [0.1, 0.3, 0.1], scale: [1.02, 1, 1.02] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-40 left-10 w-[200px] h-[200px] border border-accent/15 rounded-full"
-        />
-      </div>
-
-      {/* Static small stars */}
-      <div className="absolute inset-0 h-full w-full pointer-events-none">
-        <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="star-glow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="1.5" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          {staticStars.map((star) => (
-            <motion.circle
-              key={star.id}
-              cx={`${star.x}%`}
-              cy={`${star.y}%`}
-              r={star.size * 0.5}
-              fill="#ffffff"
-              filter="url(#star-glow)"
-              initial={{ opacity: 0.4 }}
-              animate={{
-                opacity: [0.4, 0.9, 0.4],
-                scale: [1, 1.1, 1],
-              }}
-              transition={{
-                duration: star.duration,
-                delay: star.delay,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </svg>
-      </div>
 
       {/* Main Content - Two Column Layout */}
       <div className="relative z-10 flex min-h-screen items-center px-4 sm:px-6 lg:px-8 pt-20">
@@ -235,7 +98,7 @@ export function Hero({
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="mb-8 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg lg:mx-0 mx-auto"
+                className="mb-8 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base lg:mx-0 mx-auto"
               >
                 {bio}
               </motion.p>
@@ -291,97 +154,99 @@ export function Hero({
               </motion.div>
             </div>
 
-            {/* Right Side - Image with Flashlight Effect */}
+            {/* Right Side - Image */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-              className="order-1 lg:order-2 relative flex items-center justify-center"
+              className="order-1 lg:order-2 relative flex items-center justify-center py-10"
             >
-              {/* Flashlight/Glow Effects Behind Image */}
+              {/* Deep glow behind everything */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                {/* Main flashlight glow */}
-                <motion.div
-                  animate={{
-                    scale: [1, 1.05, 1],
-                    opacity: [0.6, 0.9, 0.6],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute h-[350px] w-[350px] sm:h-[450px] sm:w-[450px] lg:h-[550px] lg:w-[550px] rounded-full bg-gradient-to-tr from-primary/50 via-primary/30 to-accent/50 blur-[100px]"
-                />
-                {/* Secondary glow */}
-                <motion.div
-                  animate={{
-                    scale: [1.05, 1, 1.05],
-                    opacity: [0.4, 0.7, 0.4],
-                  }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  className="absolute h-[300px] w-[300px] sm:h-[400px] sm:w-[400px] lg:h-[500px] lg:w-[500px] rounded-full bg-accent/40 blur-[80px]"
-                />
-                {/* Bottom accent glow */}
-                <motion.div
-                  animate={{
-                    opacity: [0.3, 0.6, 0.3],
-                  }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute bottom-0 h-[200px] w-[400px] sm:h-[250px] sm:w-[500px] rounded-full bg-primary/30 blur-[60px] translate-y-1/2"
-                />
+                <div className="absolute h-[420px] w-[420px] rounded-full bg-gradient-to-tr from-primary/40 via-accent/20 to-primary/40 blur-[90px] opacity-80" />
               </div>
 
-              {/* Image container */}
-              <div className="relative">
-                {/* Outer glow ring */}
-                <motion.div
-                  animate={{
-                    opacity: [0.5, 0.8, 0.5],
-                    scale: [1, 1.02, 1],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -inset-4 bg-gradient-to-b from-primary/20 via-transparent to-accent/20 rounded-3xl blur-xl"
-                />
+              {/* Slow-spinning outer ring */}
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+                className="absolute h-[370px] w-[370px] sm:h-[430px] sm:w-[430px] rounded-full border border-dashed border-primary/30"
+              />
 
-                {/* Image */}
-                <div className="relative h-[350px] w-[280px] sm:h-[450px] sm:w-[360px] lg:h-[550px] lg:w-[440px]">
+              {/* Counter-spinning ring */}
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
+                className="absolute h-[320px] w-[320px] sm:h-[380px] sm:w-[380px] rounded-full border border-primary/20"
+              />
+
+              {/* Pulsing glow ring */}
+              <motion.div
+                animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.9, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute h-[300px] w-[300px] sm:h-[360px] sm:w-[360px] rounded-full bg-gradient-to-tr from-primary/30 to-accent/30 blur-2xl"
+              />
+
+              {/* Image circle frame */}
+              <div className="relative z-10 rounded-full p-[3px] bg-gradient-to-br from-primary via-accent to-primary shadow-[0_0_40px_8px_hsl(var(--primary)/0.4)]">
+                <div className="rounded-full overflow-hidden bg-background/10 backdrop-blur-sm">
                   <Image
                     src={heroImageUrl}
                     alt={name}
-                    fill
-                    className="object-contain object-bottom drop-shadow-2xl"
+                    width={0}
+                    height={0}
+                    sizes="100vw"
+                    className="w-[260px] h-auto sm:w-[320px] lg:w-[380px] rounded-full"
                     priority
-                    unoptimized
                   />
-
-                  {/* Subtle gradient overlay at bottom */}
-                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background/80 via-background/20 to-transparent" />
                 </div>
-
-                {/* Floating decorative elements */}
-                <motion.div
-                  animate={{ y: [0, -12, 0], x: [0, 5, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -right-6 top-20 h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/50"
-                />
-                <motion.div
-                  animate={{ y: [0, 10, 0], x: [0, -5, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                  className="absolute -left-4 top-1/3 h-3 w-3 rounded-full bg-accent shadow-lg shadow-accent/50"
-                />
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                  className="absolute -right-8 bottom-1/3 h-5 w-5 rounded-full bg-gradient-to-r from-primary to-accent shadow-lg"
-                />
-                <motion.div
-                  animate={{ scale: [1, 1.3, 1], opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute top-10 left-0 h-2 w-2 rounded-full bg-white shadow-lg shadow-white/50"
-                />
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.9, 0.5] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-                  className="absolute bottom-1/4 -left-6 h-3 w-3 rounded-full bg-primary/80 shadow-lg shadow-primary/30"
-                />
               </div>
+
+              {/* Orbiting bubbles */}
+              {[
+                { size: "h-4 w-4", color: "bg-primary", orbit: "h-[390px] w-[390px] sm:h-[460px] sm:w-[460px]", delay: 0, duration: 6 },
+                { size: "h-3 w-3", color: "bg-accent", orbit: "h-[390px] w-[390px] sm:h-[460px] sm:w-[460px]", delay: 2, duration: 6 },
+                { size: "h-2.5 w-2.5", color: "bg-primary/70", orbit: "h-[340px] w-[340px] sm:h-[410px] sm:w-[410px]", delay: 1, duration: 8 },
+                { size: "h-2 w-2", color: "bg-accent/80", orbit: "h-[340px] w-[340px] sm:h-[410px] sm:w-[410px]", delay: 4, duration: 8 },
+              ].map((b, i) => (
+                <motion.div
+                  key={i}
+                  className={`absolute ${b.orbit} rounded-full pointer-events-none`}
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: b.duration, repeat: Infinity, ease: "linear", delay: b.delay }}
+                  style={{ transformOrigin: "center center" }}
+                >
+                  {/* Bubble sits at top of its orbit circle */}
+                  <div className={`absolute -top-1 left-1/2 -translate-x-1/2 ${b.size} rounded-full ${b.color} shadow-lg shadow-primary/50`}>
+                    <span className="absolute inset-0 rounded-full animate-ping bg-primary/60 opacity-75" />
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Floating stat badges */}
+              <motion.div
+                animate={{ y: [0, -8, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -left-4 top-1/4 z-20 flex items-center gap-2 rounded-2xl border border-primary/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-primary/10"
+              >
+                <span className="text-lg">💻</span>
+                <div className="text-xs">
+                  <p className="font-semibold text-foreground">{title.split(" ").slice(0, Math.ceil(title.split(" ").length / 2)).join(" ")}</p>
+                  <p className="text-muted-foreground">{title.split(" ").slice(Math.ceil(title.split(" ").length / 2)).join(" ")}</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                animate={{ y: [0, 8, 0] }}
+                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10"
+              >
+                <span className="text-lg">✨</span>
+                <div className="text-xs">
+                  <p className="font-semibold text-foreground">Available</p>
+                  <p className="text-muted-foreground">for work</p>
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>

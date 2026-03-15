@@ -63,6 +63,7 @@ export default async function HomePage() {
         title={profile?.title || undefined}
         bio={profile?.bio || undefined}
         resumeUrl={profile?.resume_url || undefined}
+        heroImageUrl={profile?.avatar_url || undefined}
       />
       <AboutPreview
         name={profile?.name || undefined}
