@@ -28,11 +28,11 @@ export default function AdminLayout({
 
   // Don't show sidebar on login page
   if (pathname === "/admin/login") {
-    return <>{children}</>;
+    return <div className="admin-layout">{children}</div>;
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-layout min-h-screen bg-background">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <AdminSidebar

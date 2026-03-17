@@ -2,6 +2,14 @@
 
 /* Custom cursor */
 * { cursor: none !important; }
+.admin-layout, .admin-layout * { cursor: auto !important; }
+.admin-layout a, .admin-layout a *,
+.admin-layout button, .admin-layout button *,
+.admin-layout [role='button'], .admin-layout [role='button'] *,
+.admin-layout input[type='submit'],
+.admin-layout input[type='button'],
+.admin-layout label, .admin-layout label *,
+.admin-layout select { cursor: pointer !important; }
 
 #cursor-dot,
 #cursor-ring {
