@@ -394,6 +394,12 @@ html {
   animation: float-down 3.5s ease-in-out infinite;
 }
 
+/* Orbiting bubble rings */
+.orbit-6s        { animation: spin-slow 6s  linear infinite; will-change: transform; }
+.orbit-6s-delay  { animation: spin-slow 6s  linear infinite; animation-delay: -2s;  will-change: transform; }
+.orbit-8s        { animation: spin-slow 8s  linear infinite; animation-delay: -1s;  will-change: transform; }
+.orbit-8s-delay  { animation: spin-slow 8s  linear infinite; animation-delay: -4s;  will-change: transform; }
+
 /* Background blob animation */
 @keyframes blob {
   0%, 100% {

@@ -264,6 +264,18 @@ export function Hero({
                 </div>
               </div>
 
+              {/* Orbiting bubbles — CSS only, no JS RAF */}
+              <div className="absolute h-[390px] w-[390px] sm:h-[460px] sm:w-[460px] rounded-full pointer-events-none orbit-6s">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-primary shadow-lg shadow-primary/50"><span className="absolute inset-0 rounded-full animate-ping bg-primary/60 opacity-75" /></div>
+              </div>
+              <div className="absolute h-[390px] w-[390px] sm:h-[460px] sm:w-[460px] rounded-full pointer-events-none orbit-6s-delay">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-accent shadow-lg shadow-primary/50"><span className="absolute inset-0 rounded-full animate-ping bg-accent/60 opacity-75" /></div>
+              </div>
+              <div className="absolute h-[340px] w-[340px] sm:h-[410px] sm:w-[410px] rounded-full pointer-events-none orbit-8s">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2.5 w-2.5 rounded-full bg-primary/70 shadow-lg shadow-primary/50" /></div>
+              <div className="absolute h-[340px] w-[340px] sm:h-[410px] sm:w-[410px] rounded-full pointer-events-none orbit-8s-delay">
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-accent/80 shadow-lg shadow-primary/50" /></div>
+
               <div className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10 animate-float-down">
                 <span className="text-lg">✨</span>
                 <div className="text-xs">
@@ -283,15 +295,13 @@ export function Hero({
         transition={{ duration: 1, delay: 1 }}
         className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
       >
-        <motion.a
+        <a
           href="#about"
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+          className="flex flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-primary animate-float-down"
         >
           <span className="text-xs font-medium uppercase tracking-widest">Scroll</span>
           <MousePointer2 className="h-5 w-5 rotate-180" />
-        </motion.a>
+        </a>
       </motion.div>
 
       {/* Bottom gradient fade */}
