@@ -24,20 +24,23 @@ function StarField() {
     resize();
     window.addEventListener("resize", resize);
 
-    const COUNT = 160;
+    const COUNT = 80;
     const stars = Array.from({ length: COUNT }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       r: Math.random() * 1.4 + 0.2,
-      alpha: Math.random(),
-      speed: Math.random() * 0.004 + 0.002,
+      speed: Math.random() * 0.003 + 0.001,
       offset: Math.random() * Math.PI * 2,
     }));
 
     let frame: number;
     let t = 0;
+    let tick = 0;
 
     const draw = () => {
+      frame = requestAnimationFrame(draw);
+      // Only redraw every 2nd frame (~30fps) to halve CPU usage
+      if (++tick % 2 !== 0) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       t += 1;
       for (const s of stars) {
@@ -45,11 +48,8 @@ function StarField() {
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255,255,255,${twinkle * 0.85})`;
-        ctx.shadowBlur = s.r > 1 ? 6 : 0;
-        ctx.shadowColor = "rgba(180,180,255,0.8)";
         ctx.fill();
       }
-      frame = requestAnimationFrame(draw);
     };
     draw();
 
@@ -231,25 +231,13 @@ export function Hero({
               </div>
 
               {/* Slow-spinning outer ring */}
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                className="absolute h-[370px] w-[370px] sm:h-[430px] sm:w-[430px] rounded-full border border-dashed border-primary/30"
-              />
+              <div className="absolute h-[370px] w-[370px] sm:h-[430px] sm:w-[430px] rounded-full border border-dashed border-primary/30 animate-spin-slow" />
 
               {/* Counter-spinning ring */}
-              <motion.div
-                animate={{ rotate: -360 }}
-                transition={{ duration: 26, repeat: Infinity, ease: "linear" }}
-                className="absolute h-[320px] w-[320px] sm:h-[380px] sm:w-[380px] rounded-full border border-primary/20"
-              />
+              <div className="absolute h-[320px] w-[320px] sm:h-[380px] sm:w-[380px] rounded-full border border-primary/20 animate-spin-reverse-slow" />
 
               {/* Pulsing glow ring */}
-              <motion.div
-                animate={{ scale: [1, 1.06, 1], opacity: [0.5, 0.9, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute h-[300px] w-[300px] sm:h-[360px] sm:w-[360px] rounded-full bg-gradient-to-tr from-primary/30 to-accent/30 blur-2xl"
-              />
+              <div className="absolute h-[300px] w-[300px] sm:h-[360px] sm:w-[360px] rounded-full bg-gradient-to-tr from-primary/30 to-accent/30 blur-2xl animate-pulse-glow" />
 
               {/* Image circle frame */}
               <div className="relative z-10 rounded-full p-[3px] bg-gradient-to-br from-primary via-accent to-primary shadow-[0_0_40px_8px_hsl(var(--primary)/0.4)]">
@@ -266,51 +254,23 @@ export function Hero({
                 </div>
               </div>
 
-              {/* Orbiting bubbles */}
-              {[
-                { size: "h-4 w-4", color: "bg-primary", orbit: "h-[390px] w-[390px] sm:h-[460px] sm:w-[460px]", delay: 0, duration: 6 },
-                { size: "h-3 w-3", color: "bg-accent", orbit: "h-[390px] w-[390px] sm:h-[460px] sm:w-[460px]", delay: 2, duration: 6 },
-                { size: "h-2.5 w-2.5", color: "bg-primary/70", orbit: "h-[340px] w-[340px] sm:h-[410px] sm:w-[410px]", delay: 1, duration: 8 },
-                { size: "h-2 w-2", color: "bg-accent/80", orbit: "h-[340px] w-[340px] sm:h-[410px] sm:w-[410px]", delay: 4, duration: 8 },
-              ].map((b, i) => (
-                <motion.div
-                  key={i}
-                  className={`absolute ${b.orbit} rounded-full pointer-events-none`}
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: b.duration, repeat: Infinity, ease: "linear", delay: b.delay }}
-                  style={{ transformOrigin: "center center" }}
-                >
-                  {/* Bubble sits at top of its orbit circle */}
-                  <div className={`absolute -top-1 left-1/2 -translate-x-1/2 ${b.size} rounded-full ${b.color} shadow-lg shadow-primary/50`}>
-                    <span className="absolute inset-0 rounded-full animate-ping bg-primary/60 opacity-75" />
-                  </div>
-                </motion.div>
-              ))}
 
               {/* Floating stat badges */}
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -left-4 top-1/4 z-20 flex items-center gap-2 rounded-2xl border border-primary/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-primary/10"
-              >
+              <div className="absolute -left-4 top-1/4 z-20 flex items-center gap-2 rounded-2xl border border-primary/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-primary/10 animate-float-up">
                 <span className="text-lg">💻</span>
                 <div className="text-xs">
                   <p className="font-semibold text-foreground">{title.split(" ").slice(0, Math.ceil(title.split(" ").length / 2)).join(" ")}</p>
                   <p className="text-muted-foreground">{title.split(" ").slice(Math.ceil(title.split(" ").length / 2)).join(" ")}</p>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-                className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10"
-              >
+              <div className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10 animate-float-down">
                 <span className="text-lg">✨</span>
                 <div className="text-xs">
                   <p className="font-semibold text-foreground">Available</p>
                   <p className="text-muted-foreground">for work</p>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>

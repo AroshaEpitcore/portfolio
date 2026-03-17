@@ -369,6 +369,29 @@ html {
 
 .animate-spin-slow {
   animation: spin-slow 20s linear infinite;
+  will-change: transform;
+}
+
+/* Reverse spin */
+.animate-spin-reverse-slow {
+  animation: spin-slow 26s linear infinite reverse;
+  will-change: transform;
+}
+
+/* Float up/down for hero badges */
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes float-down {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+.animate-float-up {
+  animation: float-up 3s ease-in-out infinite;
+}
+.animate-float-down {
+  animation: float-down 3.5s ease-in-out infinite;
 }
 
 /* Background blob animation */

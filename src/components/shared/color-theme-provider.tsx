@@ -18,9 +18,15 @@ export function ColorThemeProvider() {
   useEffect(() => {
     let animationFrame: number;
     let startTime: number | null = null;
+    let lastUpdate = 0;
     const duration = 20000; // 20 seconds for full cycle
+    const UPDATE_INTERVAL = 100; // update CSS var at ~10fps — imperceptible for slow color shifts
 
     const animate = (timestamp: number) => {
+      animationFrame = requestAnimationFrame(animate);
+      if (timestamp - lastUpdate < UPDATE_INTERVAL) return;
+      lastUpdate = timestamp;
+
       if (!startTime) startTime = timestamp;
       const elapsed = timestamp - startTime;
       const progress = (elapsed % duration) / duration;
@@ -53,8 +59,6 @@ export function ColorThemeProvider() {
 
       // Update CSS variable
       document.documentElement.style.setProperty("--hue", String(Math.round(hue)));
-
-      animationFrame = requestAnimationFrame(animate);
     };
 
     animationFrame = requestAnimationFrame(animate);
