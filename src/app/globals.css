@@ -50,25 +50,9 @@
   background: hsl(var(--hue), var(--saturation), 60%, 0.08);
 }
 
-/* Lenis smooth scroll */
-html.lenis, html.lenis body {
-  height: auto;
-}
-
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-
-.lenis.lenis-stopped {
-  overflow: hidden;
-}
-
-.lenis.lenis-scrolling iframe {
-  pointer-events: none;
+/* Native smooth scroll */
+html {
+  scroll-behavior: smooth;
 }
 
 :root {
@@ -241,10 +225,7 @@ html {
   100% { --hue: 250; }    /* Back to Purple */
 }
 
-/* Apply the animation to root */
-:root, .dark {
-  animation: hue-rotate 20s ease-in-out infinite;
-}
+/* Hue is animated via JS ColorThemeProvider (throttled) — no CSS animation on :root */
 
 /* Spotlight animation */
 @keyframes spotlight {
