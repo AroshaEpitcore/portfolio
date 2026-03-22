@@ -1,15 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "mgaravishan@gmail.com";
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Only protect cv-generator routes
-  if (!pathname.startsWith("/cv-generator")) {
+  const isAdmin = pathname.startsWith("/admin");
+  const isCVGenerator = pathname.startsWith("/cv-generator");
+
+  if (!isAdmin && !isCVGenerator) {
     return NextResponse.next();
   }
 
-  // Guard: if Supabase env vars are missing, skip auth check
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -44,15 +47,27 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    const loginUrl = new URL("/auth/login", request.url);
-    loginUrl.searchParams.set("from", pathname);
-    return NextResponse.redirect(loginUrl);
+  // ── Admin routes: must be logged in AND be the admin email ──
+  if (isAdmin) {
+    if (!user || user.email !== ADMIN_EMAIL) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+    return response;
+  }
+
+  // ── CV Generator: any authenticated user ──
+  if (isCVGenerator) {
+    if (!user) {
+      const loginUrl = new URL("/auth/login", request.url);
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/cv-generator/:path*"],
+  matcher: ["/admin/:path*", "/cv-generator/:path*"],
 };
