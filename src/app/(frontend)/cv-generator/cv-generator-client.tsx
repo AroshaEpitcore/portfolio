@@ -26,6 +26,10 @@ import {
   CheckCircle,
   Monitor,
   RefreshCw,
+  AlignLeft,
+  AlignCenter,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,6 +111,23 @@ const FONT_OPTIONS: { key: CVStyles["fontFamily"]; label: string; sub: string; s
   { key: "courier",   label: "Technical",sub: "Monospace",   stack: "ui-monospace, monospace" },
 ];
 
+const DEFAULT_SECTION_ORDER = [
+  "experience", "projects", "volunteer", "customSections", "references",
+  "education", "skills", "certifications", "languages",
+];
+
+const SECTION_LABELS: Record<string, string> = {
+  experience: "Work Experience",
+  projects: "Projects",
+  volunteer: "Volunteer",
+  customSections: "Custom Sections",
+  references: "References",
+  education: "Education",
+  skills: "Skills",
+  certifications: "Certifications",
+  languages: "Languages",
+};
+
 const COLOR_OPTIONS: { color: string; label: string }[] = [
   { color: "#6366f1", label: "Indigo"   },
   { color: "#2563eb", label: "Blue"     },
@@ -118,7 +139,7 @@ const COLOR_OPTIONS: { color: string; label: string }[] = [
 ];
 
 const defaultData: CVFormData = {
-  styles: { fontFamily: "helvetica", accentColor: "#6366f1" },
+  styles: { fontFamily: "helvetica", accentColor: "#6366f1", headerAlign: "left", spacing: "normal", sectionOrder: DEFAULT_SECTION_ORDER },
   personal: {
     fullName: "",
     jobTitle: "",
@@ -142,7 +163,7 @@ const defaultData: CVFormData = {
 };
 
 const sampleData: CVFormData = {
-  styles: { fontFamily: "helvetica", accentColor: "#6366f1" },
+  styles: { fontFamily: "helvetica", accentColor: "#6366f1", headerAlign: "left", spacing: "normal", sectionOrder: DEFAULT_SECTION_ORDER },
   personal: {
     fullName: "Sarah Johnson",
     jobTitle: "Full Stack Developer",
@@ -550,6 +571,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
 
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showValidation, setShowValidation] = useState(false);
 
   // ── Field updaters ─────────────────────────────────────────────────────────
 
@@ -610,6 +632,10 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
     }));
   }
 
+  function setStyle<K extends keyof CVStyles>(key: K, value: CVStyles[K]) {
+    if (!showSample) setData((d) => ({ ...d, styles: { ...d.styles, [key]: value } }));
+  }
+
   // ── Auto-save ───────────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -641,6 +667,18 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
     if (isLimited) {
       setShowPayment(true);
       return;
+    }
+    if (!showSample) {
+      const missing: string[] = [];
+      if (!data.personal.fullName.trim()) missing.push("Full Name");
+      if (!data.personal.jobTitle.trim()) missing.push("Job Title");
+      if (!data.personal.email.trim()) missing.push("Email");
+      if (missing.length > 0) {
+        setShowValidation(true);
+        toast.error("Please fill in required fields: " + missing.join(", "));
+        document.getElementById("personal-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
     }
     setGenerating(true);
 
@@ -814,6 +852,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
 
         {/* ── Personal Info ── */}
         <Card>
+          <div id="personal-section">
           <SectionHeader icon={User} label="Personal Information" />
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Full Name *">
@@ -828,6 +867,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                 }
                 placeholder="John Doe"
                 readOnly={showSample}
+                className={showValidation && !data.personal.fullName.trim() && !showSample ? "ring-2 ring-red-500/70 border-red-500/70" : ""}
               />
             </Field>
             <Field label="Job Title *">
@@ -842,6 +882,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                 }
                 placeholder="Full Stack Developer"
                 readOnly={showSample}
+                className={showValidation && !data.personal.jobTitle.trim() && !showSample ? "ring-2 ring-red-500/70 border-red-500/70" : ""}
               />
             </Field>
             <Field label="Email *">
@@ -855,6 +896,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                 }
                 placeholder="you@email.com"
                 readOnly={showSample}
+                className={showValidation && !data.personal.email.trim() && !showSample ? "ring-2 ring-red-500/70 border-red-500/70" : ""}
               />
             </Field>
             <Field label="Phone">
@@ -923,6 +965,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                 readOnly={showSample}
               />
             </Field>
+          </div>
           </div>
         </Card>
 
@@ -1763,7 +1806,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             </div>
 
             {/* Accent color */}
-            <div>
+            <div className="mb-5">
               <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Accent Color
               </p>
@@ -1773,13 +1816,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                     key={c.color}
                     type="button"
                     title={c.label}
-                    onClick={() =>
-                      !showSample &&
-                      setData((d) => ({
-                        ...d,
-                        styles: { ...d.styles, accentColor: c.color },
-                      }))
-                    }
+                    onClick={() => setStyle("accentColor", c.color)}
                     className={`relative h-9 w-full rounded-lg transition-all hover:scale-105 ${
                       data.styles.accentColor === c.color
                         ? "ring-2 ring-offset-2 ring-offset-background"
@@ -1787,9 +1824,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                     }`}
                     style={{
                       backgroundColor: c.color,
-                      ...(data.styles.accentColor === c.color
-                        ? { outlineColor: c.color }
-                        : {}),
+                      ...(data.styles.accentColor === c.color ? { outlineColor: c.color } : {}),
                     }}
                   >
                     {data.styles.accentColor === c.color && (
@@ -1800,12 +1835,111 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                   </button>
                 ))}
               </div>
-              <p
-                className="mt-2 text-center text-[10px] font-medium"
-                style={{ color: data.styles.accentColor }}
-              >
-                {COLOR_OPTIONS.find((c) => c.color === data.styles.accentColor)?.label ?? "Custom"}
+              {/* Hex color input */}
+              <div className="mt-3 flex items-center gap-2">
+                <div
+                  className="h-7 w-7 shrink-0 rounded border border-border"
+                  style={{ backgroundColor: data.styles.accentColor }}
+                />
+                <Input
+                  value={data.styles.accentColor}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (/^#[0-9a-fA-F]{0,6}$/.test(v)) {
+                      setStyle("accentColor", v);
+                    }
+                  }}
+                  placeholder="#6366f1"
+                  className="h-7 flex-1 font-mono text-xs"
+                  readOnly={showSample}
+                />
+              </div>
+            </div>
+
+            {/* Header align */}
+            <div className="mb-5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Header Alignment
               </p>
+              <div className="flex gap-2">
+                {(["left", "center"] as const).map((align) => (
+                  <button
+                    key={align}
+                    type="button"
+                    onClick={() => setStyle("headerAlign", align)}
+                    className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg border py-2 text-xs transition-all ${
+                      (data.styles.headerAlign ?? "left") === align
+                        ? "border-primary bg-primary/10 text-primary font-semibold"
+                        : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {align === "left" ? <AlignLeft className="h-3.5 w-3.5" /> : <AlignCenter className="h-3.5 w-3.5" />}
+                    {align === "left" ? "Left" : "Center"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Spacing */}
+            <div className="mb-5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Spacing
+              </p>
+              <div className="flex gap-1.5">
+                {(["compact", "normal", "spacious"] as const).map((sp) => (
+                  <button
+                    key={sp}
+                    type="button"
+                    onClick={() => setStyle("spacing", sp)}
+                    className={`flex-1 rounded-lg border py-1.5 text-[10px] capitalize transition-all ${
+                      (data.styles.spacing ?? "normal") === sp
+                        ? "border-primary bg-primary/10 text-primary font-semibold"
+                        : "border-border text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    {sp}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Section order */}
+            <div className="mb-5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Section Order
+              </p>
+              <p className="mb-2 text-[9px] text-muted-foreground">Reorder sections in your PDF</p>
+              <div className="space-y-1">
+                {(data.styles.sectionOrder ?? DEFAULT_SECTION_ORDER).map((key, idx, arr) => (
+                  <div key={key} className="flex items-center gap-1 rounded-lg border border-border/60 bg-background px-2 py-1.5">
+                    <span className="flex-1 text-xs text-foreground truncate">{SECTION_LABELS[key] ?? key}</span>
+                    <button
+                      type="button"
+                      disabled={idx === 0}
+                      onClick={() => {
+                        const next = [...arr];
+                        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+                        setStyle("sectionOrder", next);
+                      }}
+                      className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={idx === arr.length - 1}
+                      onClick={() => {
+                        const next = [...arr];
+                        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+                        setStyle("sectionOrder", next);
+                      }}
+                      className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
+                    >
+                      <ChevronDown className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Mini preview */}

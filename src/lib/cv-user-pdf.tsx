@@ -26,7 +26,12 @@ const FONT_MAP = {
 
 // ── Style builder (creates all styles from font + accent color) ───────────────
 
-function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
+function buildStyles(
+  fontKey: keyof typeof FONT_MAP,
+  accent: string,
+  headerAlign: "left" | "center" = "left",
+  spacing: "compact" | "normal" | "spacious" = "normal"
+) {
   const f = FONT_MAP[fontKey] ?? FONT_MAP.helvetica;
   const TEXT  = "#1a1a2e";
   const MUTED = "#64748b";
@@ -34,20 +39,25 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
   const BORDER= "#e2e8f0";
   const WHITE = "#ffffff";
 
+  const SP = spacing === "compact" ? 0.72 : spacing === "spacious" ? 1.28 : 1.0;
+  const ALIGN = headerAlign === "center" ? "center" as const : "flex-start" as const;
+  const TALIGN = headerAlign === "center" ? "center" as const : "left" as const;
+
   return {
     page: {
       fontFamily: f.reg,
       fontSize: 9,
       color: TEXT,
       backgroundColor: WHITE,
-      paddingTop: 40,
-      paddingBottom: 40,
-      paddingHorizontal: 46,
+      paddingTop: Math.round(40 * SP),
+      paddingBottom: Math.round(40 * SP),
+      paddingHorizontal: Math.round(46 * SP),
     },
 
     // ── Header ─────────────────────────────────────────────────────────────
     headerBlock: {
-      marginBottom: 10,
+      marginBottom: Math.round(10 * SP),
+      alignItems: ALIGN,
     },
     name: {
       fontFamily: f.bold,
@@ -55,6 +65,7 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
       color: TEXT,
       letterSpacing: 0.3,
       marginBottom: 3,
+      textAlign: TALIGN,
     },
     jobTitle: {
       fontFamily: f.reg,
@@ -62,11 +73,13 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
       color: accent,
       letterSpacing: 0.5,
       marginBottom: 8,
+      textAlign: TALIGN,
     },
     contactRow: {
       flexDirection: "row" as const,
       flexWrap: "wrap" as const,
       alignItems: "center" as const,
+      justifyContent: headerAlign === "center" ? "center" as const : "flex-start" as const,
       gap: 0,
     },
     contactSep: {
@@ -90,26 +103,26 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
     divider: {
       height: 2,
       backgroundColor: accent,
-      marginTop: 10,
-      marginBottom: 14,
+      marginTop: Math.round(10 * SP),
+      marginBottom: Math.round(14 * SP),
     },
     dividerThin: {
       height: 0.5,
       backgroundColor: BORDER,
-      marginTop: 10,
-      marginBottom: 14,
+      marginTop: Math.round(10 * SP),
+      marginBottom: Math.round(14 * SP),
     },
 
     // ── Two-column body ────────────────────────────────────────────────────
     body: {
       flexDirection: "row" as const,
-      gap: 22,
+      gap: Math.round(22 * SP),
     },
     mainCol: { flex: 1.65 },
     sideCol: { flex: 1 },
 
     // ── Section ────────────────────────────────────────────────────────────
-    section: { marginBottom: 14 },
+    section: { marginBottom: Math.round(14 * SP) },
     sectionLabel: {
       fontFamily: f.bold,
       fontSize: 7,
@@ -124,7 +137,7 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
     },
 
     // ── Entry (exp / edu) ──────────────────────────────────────────────────
-    entry: { marginBottom: 10 },
+    entry: { marginBottom: Math.round(10 * SP) },
     entryHeader: {
       flexDirection: "row" as const,
       justifyContent: "space-between" as const,
@@ -334,10 +347,27 @@ function ContactSep({ s }: { s: S }) {
 
 // ── Main document ─────────────────────────────────────────────────────────────
 
+const MAIN_SECTIONS = ["experience", "projects", "volunteer", "customSections", "references"];
+const SIDE_SECTIONS = ["education", "skills", "certifications", "languages"];
+const DEFAULT_SECTION_ORDER = [...MAIN_SECTIONS, ...SIDE_SECTIONS];
+
 export function UserCVDocument({ data }: { data: CVFormData }) {
-  const fontKey = (data.styles?.fontFamily ?? "helvetica") as keyof typeof FONT_MAP;
-  const accent  = data.styles?.accentColor ?? "#6366f1";
-  const s       = buildStyles(fontKey, accent);
+  const fontKey     = (data.styles?.fontFamily ?? "helvetica") as keyof typeof FONT_MAP;
+  const accent      = data.styles?.accentColor ?? "#6366f1";
+  const headerAlign = data.styles?.headerAlign ?? "left";
+  const spacing     = data.styles?.spacing ?? "normal";
+  const s           = buildStyles(fontKey, accent, headerAlign, spacing);
+
+  // Determine ordered main + side section keys based on user preference
+  const userOrder = data.styles?.sectionOrder ?? DEFAULT_SECTION_ORDER;
+  const orderedMain = [
+    ...MAIN_SECTIONS.filter(k => userOrder.includes(k)).sort((a, b) => userOrder.indexOf(a) - userOrder.indexOf(b)),
+    ...MAIN_SECTIONS.filter(k => !userOrder.includes(k)),
+  ];
+  const orderedSide = [
+    ...SIDE_SECTIONS.filter(k => userOrder.includes(k)).sort((a, b) => userOrder.indexOf(a) - userOrder.indexOf(b)),
+    ...SIDE_SECTIONS.filter(k => !userOrder.includes(k)),
+  ];
 
   const { personal, summary, experience, education, skills, projects, certifications } = data;
   const languages     = data.languages     ?? [];
@@ -401,15 +431,11 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
           <Text style={s.summary}>{summary}</Text>
         )}
 
-        {/* ── TWO-COLUMN BODY ── */}
-        <View style={s.body}>
-
-          {/* ── MAIN COLUMN ── */}
-          <View style={s.mainCol}>
-
-            {/* Work Experience */}
-            {hasExp && (
-              <Section s={s} label="Work Experience">
+        {/* ── TWO-COLUMN BODY (ordered by user preference) ── */}
+        {(() => {
+          const mainSectionNodes: Record<string, React.ReactNode> = {
+            experience: hasExp ? (
+              <Section s={s} label="Work Experience" key="experience">
                 {experience.filter((e) => e.company).map((exp) => (
                   <View key={exp.id} style={s.entry}>
                     <View style={s.entryHeader}>
@@ -420,38 +446,27 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                       </Text>
                     </View>
                     <Text style={s.entryOrg}>{exp.company}</Text>
-                    {exp.description &&
-                      parseBullets(exp.description).map((b, i) => (
-                        <Bullet key={i} s={s} text={b} />
-                      ))}
+                    {exp.description && parseBullets(exp.description).map((b, i) => <Bullet key={i} s={s} text={b} />)}
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Projects */}
-            {hasProj && (
-              <Section s={s} label="Projects">
+            ) : null,
+            projects: hasProj ? (
+              <Section s={s} label="Projects" key="projects">
                 {projects.filter((p) => p.name).map((p) => (
                   <View key={p.id} style={s.projectEntry}>
                     <View style={s.projectHeader}>
                       <Text style={s.projectTitle}>{p.name}</Text>
-                      {p.url && (
-                        <Link src={p.url} style={s.projectLink}>
-                          {p.url.replace("https://", "")}
-                        </Link>
-                      )}
+                      {p.url && <Link src={p.url} style={s.projectLink}>{p.url.replace("https://", "")}</Link>}
                     </View>
                     {p.techStack && <Text style={s.projectStack}>{p.techStack}</Text>}
                     {p.description && <Text style={s.projectDesc}>{p.description}</Text>}
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Volunteer & Extra-Curricular */}
-            {hasVol && (
-              <Section s={s} label="Volunteer & Extra-Curricular">
+            ) : null,
+            volunteer: hasVol ? (
+              <Section s={s} label="Volunteer & Extra-Curricular" key="volunteer">
                 {volunteer.filter((v) => v.organization).map((vol) => (
                   <View key={vol.id} style={s.entry}>
                     <View style={s.entryHeader}>
@@ -462,25 +477,22 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                       </Text>
                     </View>
                     <Text style={s.entryOrg}>{vol.organization}</Text>
-                    {vol.description &&
-                      parseBullets(vol.description).map((b, i) => (
-                        <Bullet key={i} s={s} text={b} />
-                      ))}
+                    {vol.description && parseBullets(vol.description).map((b, i) => <Bullet key={i} s={s} text={b} />)}
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Custom Sections */}
-            {customSections.filter((cs) => cs.title && cs.content).map((cs) => (
-              <Section key={cs.id} s={s} label={cs.title}>
-                <Text style={s.customContent}>{cs.content}</Text>
-              </Section>
-            ))}
-
-            {/* References (detailed) */}
-            {hasRef && !allRefAvailable && (
-              <Section s={s} label="References">
+            ) : null,
+            customSections: customSections.filter((cs) => cs.title && cs.content).length > 0 ? (
+              <View key="customSections">
+                {customSections.filter((cs) => cs.title && cs.content).map((cs) => (
+                  <Section key={cs.id} s={s} label={cs.title}>
+                    <Text style={s.customContent}>{cs.content}</Text>
+                  </Section>
+                ))}
+              </View>
+            ) : null,
+            references: hasRef && !allRefAvailable ? (
+              <Section s={s} label="References" key="references">
                 {references.filter((r) => r.available || r.name).map((ref) => (
                   <View key={ref.id} style={s.refEntry}>
                     {ref.available ? (
@@ -488,30 +500,21 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                     ) : (
                       <>
                         <Text style={s.refName}>{ref.name}</Text>
-                        <Text style={s.refSub}>
-                          {ref.company}{ref.contact ? `  ·  ${ref.contact}` : ""}
-                        </Text>
+                        <Text style={s.refSub}>{ref.company}{ref.contact ? `  ·  ${ref.contact}` : ""}</Text>
                       </>
                     )}
                   </View>
                 ))}
               </Section>
-            )}
-          </View>
+            ) : null,
+          };
 
-          {/* ── SIDE COLUMN ── */}
-          <View style={s.sideCol}>
-
-            {/* Education */}
-            {hasEdu && (
-              <Section s={s} label="Education">
+          const sideSectionNodes: Record<string, React.ReactNode> = {
+            education: hasEdu ? (
+              <Section s={s} label="Education" key="education">
                 {education.filter((e) => e.institution).map((edu) => (
                   <View key={edu.id} style={s.entry}>
-                    <Text style={s.eduTitle}>
-                      {edu.fieldOfStudy
-                        ? `${edu.degree} — ${edu.fieldOfStudy}`
-                        : edu.degree}
-                    </Text>
+                    <Text style={s.eduTitle}>{edu.fieldOfStudy ? `${edu.degree} — ${edu.fieldOfStudy}` : edu.degree}</Text>
                     <Text style={s.entryOrg}>{edu.institution}</Text>
                     <Text style={s.entryDate}>
                       {fmtDate(edu.startDate)}{edu.startDate ? " – " : ""}
@@ -519,37 +522,29 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                     </Text>
                     {edu.grade && (
                       <View style={{ ...s.accentBox, marginTop: 3 }}>
-                        <Text style={{ fontSize: 7.5, fontFamily: FONT_MAP[fontKey].bold, color: accent }}>
-                          {edu.grade}
-                        </Text>
+                        <Text style={{ fontSize: 7.5, fontFamily: FONT_MAP[fontKey].bold, color: accent }}>{edu.grade}</Text>
                       </View>
                     )}
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Skills */}
-            {hasSkill && (
-              <Section s={s} label="Technical Skills">
+            ) : null,
+            skills: hasSkill ? (
+              <Section s={s} label="Technical Skills" key="skills">
                 {skills.filter((g) => g.category && g.items).map((group) => (
                   <View key={group.id} style={s.skillGroup}>
                     <Text style={s.skillCatLabel}>{group.category}</Text>
-                    <Text style={s.skillText}>
-                      {group.items.split(",").map((sk) => sk.trim()).filter(Boolean).join("  ·  ")}
-                    </Text>
+                    <Text style={s.skillText}>{group.items.split(",").map((sk) => sk.trim()).filter(Boolean).join("  ·  ")}</Text>
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Certifications */}
-            {hasCert && (
-              <Section s={s} label="Certifications & Awards">
+            ) : null,
+            certifications: hasCert ? (
+              <Section s={s} label="Certifications & Awards" key="certifications">
                 {certifications.filter((c) => c.name).map((cert) => (
                   <View key={cert.id} style={s.certEntry}>
                     {cert.url ? (
-                      <Link src={cert.url} style={{ ...s.certTitle, textDecoration: "none" }}>
+                      <Link src={cert.url} style={{ ...s.certTitle, textDecoration: "none" as const }}>
                         {cert.name}
                       </Link>
                     ) : (
@@ -561,11 +556,9 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                   </View>
                 ))}
               </Section>
-            )}
-
-            {/* Languages */}
-            {hasLang && (
-              <Section s={s} label="Languages">
+            ) : null,
+            languages: hasLang ? (
+              <Section s={s} label="Languages" key="languages">
                 {languages.filter((l) => l.language).map((lang) => (
                   <View key={lang.id} style={s.langRow}>
                     <Text style={s.langName}>{lang.language}</Text>
@@ -573,16 +566,27 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                   </View>
                 ))}
               </Section>
-            )}
+            ) : null,
+          };
 
-            {/* References — "available on request" only */}
-            {hasRef && allRefAvailable && (
-              <Section s={s} label="References">
-                <Text style={s.refSub}>Available upon request</Text>
-              </Section>
-            )}
-          </View>
-        </View>
+          return (
+            <View style={s.body}>
+              <View style={s.mainCol}>
+                {orderedMain.map((key) => mainSectionNodes[key] ?? null)}
+              </View>
+              <View style={s.sideCol}>
+                {orderedSide.map((key) => sideSectionNodes[key] ?? null)}
+                {/* References available-on-request always goes at the bottom of the sidebar */}
+                {hasRef && allRefAvailable && (
+                  <Section s={s} label="References">
+                    <Text style={s.refSub}>Available upon request</Text>
+                  </Section>
+                )}
+              </View>
+            </View>
+          );
+        })()}
+
       </Page>
     </Document>
   );

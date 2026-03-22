@@ -616,6 +616,9 @@ export interface CVGeneration {
 export interface CVStyles {
   fontFamily: "helvetica" | "times" | "courier";
   accentColor: string;
+  headerAlign: "left" | "center";
+  spacing: "compact" | "normal" | "spacious";
+  sectionOrder: string[];
 }
 
 export interface CVFormData {
