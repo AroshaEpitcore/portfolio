@@ -137,6 +137,13 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
       color: TEXT,
       flex: 1,
     },
+    // Education title — same as entryTitle but NO flex:1 so it doesn't collapse siblings
+    eduTitle: {
+      fontFamily: f.bold,
+      fontSize: 9,
+      color: TEXT,
+      marginBottom: 2,
+    },
     entryDate: {
       fontFamily: f.italic,
       fontSize: 7.5,
@@ -500,7 +507,7 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
               <Section s={s} label="Education">
                 {education.filter((e) => e.institution).map((edu) => (
                   <View key={edu.id} style={s.entry}>
-                    <Text style={s.entryTitle}>
+                    <Text style={s.eduTitle}>
                       {edu.fieldOfStudy
                         ? `${edu.degree} — ${edu.fieldOfStudy}`
                         : edu.degree}
