@@ -18,13 +18,10 @@
 .cv-generator-page [role='button'], .cv-generator-page [role='button'] *,
 .cv-generator-page input[type='submit'],
 .cv-generator-page input[type='button'],
-.cv-generator-page input, .cv-generator-page textarea, .cv-generator-page select,
-.cv-generator-page label, .cv-generator-page label * { cursor: pointer !important; }
-.cv-generator-page input[type='text'],
-.cv-generator-page input[type='email'],
-.cv-generator-page input[type='month'],
-.cv-generator-page input[type='url'],
-.cv-generator-page input[type='tel'],
+.cv-generator-page input[type='checkbox'],
+.cv-generator-page select,
+.cv-generator-page label { cursor: pointer !important; }
+.cv-generator-page input:not([type='submit']):not([type='button']):not([type='checkbox']),
 .cv-generator-page textarea { cursor: text !important; }
 
 #cursor-dot,
