@@ -18,7 +18,9 @@ export default function FrontendLayout({
       <CommandPalette />
       <ScrollProgress />
       <Navbar />
-      <CVPromoBanner />
+      <div className="sticky top-[68px] z-40">
+        <CVPromoBanner />
+      </div>
       <main className="flex-1">{children}</main>
       <Footer />
     </div>

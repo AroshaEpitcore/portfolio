@@ -26,7 +26,11 @@
       "Bash(grep -n \"folder=\" C:\\\\ravishanmga\\\\portfolio/src/app/admin/**/*.tsx 2>/dev/null | head -20)",
       "Bash(npm run:*)",
       "Bash(npx next:*)",
-      "Bash(taskkill /F /IM node.exe 2>&1; sleep 2 && npm run build 2>&1)"
+      "Bash(taskkill /F /IM node.exe 2>&1; sleep 2 && npm run build 2>&1)",
+      "Bash(ls:*)",
+      "Bash(ls /c/ravishanmga/portfolio/src/app/\\\\\\(frontend\\\\\\)/cv-generator/)",
+      "Bash(ls \"/c/ravishanmga/portfolio/src/app/\\(frontend\\)/cv-generator/page.tsx\")",
+      "Bash(ls \"/c/ravishanmga/portfolio/src/app/\\(frontend\\)/cv-generator/cv-generator-client.tsx\")"
     ]
   }
 }
