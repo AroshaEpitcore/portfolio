@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 
 export function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
-  const disabled = pathname === "/cv-generator";
 
   useEffect(() => {
-    if (disabled) return;
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!dot || !ring) return;
@@ -78,9 +74,7 @@ export function CustomCursor() {
       document.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(animFrame);
     };
-  }, [disabled]);
-
-  if (disabled) return null;
+  }, []);
 
   return (
     <>
