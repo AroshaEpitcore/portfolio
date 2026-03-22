@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
@@ -37,48 +37,19 @@ const toolbar: {
   suffix: string;
   block?: boolean;
 }[] = [
-  { icon: Bold,         label: "Bold",          prefix: "**",  suffix: "**" },
-  { icon: Italic,       label: "Italic",        prefix: "_",   suffix: "_" },
-  { icon: Heading1,     label: "Heading 1",     prefix: "# ",  suffix: "",  block: true },
-  { icon: Heading2,     label: "Heading 2",     prefix: "## ", suffix: "",  block: true },
-  { icon: Heading3,     label: "Heading 3",     prefix: "### ",suffix: "",  block: true },
-  { icon: List,         label: "Bullet list",   prefix: "- ",  suffix: "",  block: true },
-  { icon: ListOrdered,  label: "Ordered list",  prefix: "1. ", suffix: "",  block: true },
-  { icon: Quote,        label: "Blockquote",    prefix: "> ",  suffix: "",  block: true },
-  { icon: Code,         label: "Inline code",   prefix: "`",   suffix: "`" },
-  { icon: Minus,        label: "Divider",       prefix: "\n---\n", suffix: "", block: true },
-  { icon: Link,         label: "Link",          prefix: "[", suffix: "](url)" },
-  { icon: Image,        label: "Image",         prefix: "![alt](", suffix: ")" },
+  { icon: Bold,        label: "Bold",         prefix: "**",    suffix: "**" },
+  { icon: Italic,      label: "Italic",       prefix: "_",     suffix: "_" },
+  { icon: Heading1,    label: "Heading 1",    prefix: "# ",    suffix: "", block: true },
+  { icon: Heading2,    label: "Heading 2",    prefix: "## ",   suffix: "", block: true },
+  { icon: Heading3,    label: "Heading 3",    prefix: "### ",  suffix: "", block: true },
+  { icon: List,        label: "Bullet list",  prefix: "- ",    suffix: "", block: true },
+  { icon: ListOrdered, label: "Ordered list", prefix: "1. ",   suffix: "", block: true },
+  { icon: Quote,       label: "Blockquote",   prefix: "> ",    suffix: "", block: true },
+  { icon: Code,        label: "Inline code",  prefix: "`",     suffix: "`" },
+  { icon: Minus,       label: "Divider",      prefix: "\n---\n", suffix: "", block: true },
+  { icon: Link,        label: "Link",         prefix: "[",     suffix: "](url)" },
+  { icon: Image,       label: "Image",        prefix: "![alt](", suffix: ")" },
 ];
-
-function insertMarkdown(
-  textarea: HTMLTextAreaElement,
-  prefix: string,
-  suffix: string,
-  block: boolean,
-  value: string,
-  onChange: (v: string) => void
-) {
-  const { selectionStart: start, selectionEnd: end } = textarea;
-  const selected = value.slice(start, end);
-  let insert: string;
-
-  if (block) {
-    insert = prefix + (selected || "text");
-  } else {
-    insert = prefix + (selected || "text") + suffix;
-  }
-
-  const next = value.slice(0, start) + insert + value.slice(end);
-  onChange(next);
-
-  // Restore cursor after React re-render
-  setTimeout(() => {
-    textarea.focus();
-    const cursor = start + insert.length;
-    textarea.setSelectionRange(cursor, cursor);
-  }, 0);
-}
 
 export function MarkdownEditor({
   value,
@@ -87,21 +58,72 @@ export function MarkdownEditor({
   minHeight = 480,
 }: MarkdownEditorProps) {
   const [mode, setMode] = useState<ViewMode>("split");
+  const [preview, setPreview] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Track whether the textarea is being edited (to avoid overwriting cursor)
+  const isEditingRef = useRef(false);
+
+  // Sync external value into the uncontrolled textarea (e.g. when loading saved post)
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta || isEditingRef.current) return;
+    if (ta.value !== value) {
+      ta.value = value;
+      setPreview(value);
+    }
+  }, [value]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const v = e.target.value;
+    setPreview(v);
+    onChange(v);
+  }, [onChange]);
+
+  // Tab key → insert 2 spaces instead of moving focus
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+    const ta = e.currentTarget;
+    const { selectionStart: s, selectionEnd: end } = ta;
+    const spaces = "  ";
+    const next = ta.value.slice(0, s) + spaces + ta.value.slice(end);
+    ta.value = next;
+    ta.setSelectionRange(s + spaces.length, s + spaces.length);
+    setPreview(next);
+    onChange(next);
+  }, [onChange]);
+
+  const insertMarkdown = useCallback((prefix: string, suffix: string, block: boolean) => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const { selectionStart: s, selectionEnd: e } = ta;
+    const selected = ta.value.slice(s, e);
+    const insert = block
+      ? prefix + (selected || "text")
+      : prefix + (selected || "text") + suffix;
+    const next = ta.value.slice(0, s) + insert + ta.value.slice(e);
+    // Update DOM directly (uncontrolled)
+    ta.value = next;
+    const cursor = s + insert.length;
+    ta.setSelectionRange(cursor, cursor);
+    ta.focus();
+    setPreview(next);
+    onChange(next);
+  }, [onChange]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-background">
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 border-b border-border bg-muted/40 px-2 py-1.5 flex-wrap">
+      <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-muted/40 px-2 py-1.5">
         {toolbar.map((item) => (
           <button
             key={item.label}
             type="button"
             title={item.label}
-            onClick={() => {
-              if (textareaRef.current) {
-                insertMarkdown(textareaRef.current, item.prefix, item.suffix, item.block ?? false, value, onChange);
-              }
+            onMouseDown={(e) => {
+              // Prevent blur before insert runs
+              e.preventDefault();
+              insertMarkdown(item.prefix, item.suffix, item.block ?? false);
             }}
             className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           >
@@ -109,7 +131,7 @@ export function MarkdownEditor({
           </button>
         ))}
 
-        {/* Spacer */}
+        {/* View mode toggles */}
         <div className="ml-auto flex items-center gap-0.5 border-l border-border pl-2">
           {(["edit", "split", "preview"] as ViewMode[]).map((m) => (
             <button
@@ -132,7 +154,7 @@ export function MarkdownEditor({
 
       {/* Editor area */}
       <div className="flex" style={{ minHeight }}>
-        {/* Textarea */}
+        {/* Textarea — uncontrolled, no value prop */}
         {(mode === "edit" || mode === "split") && (
           <div className={`flex flex-col ${mode === "split" ? "w-1/2 border-r border-border" : "w-full"}`}>
             <div className="shrink-0 border-b border-border/50 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -140,11 +162,14 @@ export function MarkdownEditor({
             </div>
             <textarea
               ref={textareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
+              defaultValue={value}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => { isEditingRef.current = true; }}
+              onBlur={() => { isEditingRef.current = false; }}
               placeholder={placeholder}
-              className="flex-1 resize-none bg-transparent p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
-              style={{ minHeight: minHeight - 28 }}
+              className="flex-1 resize-none bg-transparent p-4 font-mono text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/50 focus:outline-none"
+              style={{ minHeight: minHeight - 28, tabSize: 2 }}
               spellCheck={false}
             />
           </div>
@@ -157,7 +182,7 @@ export function MarkdownEditor({
               Preview
             </div>
             <div className="flex-1 overflow-y-auto p-4">
-              {value ? (
+              {preview ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none
                   prose-headings:font-bold prose-headings:text-foreground
                   prose-p:text-muted-foreground prose-p:leading-relaxed
@@ -167,20 +192,20 @@ export function MarkdownEditor({
                   prose-blockquote:border-l-primary prose-blockquote:text-muted-foreground
                   prose-hr:border-border prose-strong:text-foreground
                   prose-li:text-muted-foreground prose-ol:text-muted-foreground prose-ul:text-muted-foreground">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{value}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{preview}</ReactMarkdown>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground/50 italic">Preview will appear here as you type…</p>
+                <p className="text-sm italic text-muted-foreground/50">Preview will appear here as you type…</p>
               )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Footer: word count */}
+      {/* Footer */}
       <div className="flex items-center justify-between border-t border-border/50 px-3 py-1.5 text-[10px] text-muted-foreground">
-        <span>{value.split(/\s+/).filter(Boolean).length} words</span>
-        <span>{value.length} characters</span>
+        <span>{preview.split(/\s+/).filter(Boolean).length} words</span>
+        <span>{preview.length} characters</span>
       </div>
     </div>
   );
