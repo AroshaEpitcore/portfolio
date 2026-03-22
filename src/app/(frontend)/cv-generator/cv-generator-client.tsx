@@ -1313,7 +1313,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             {isLimited ? "Unlock for Rs. 250" : "Download My CV as PDF"}
           </Button>
         </div>
-        </div> {/* end left col */}
+        </div>
 
         {/* ── RIGHT: Sticky Style Panel ── */}
         <div className="w-72 shrink-0 space-y-4 lg:sticky lg:top-24">
@@ -1456,10 +1456,10 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
               {isLimited ? "Unlock — Rs. 250" : "Download PDF"}
             </Button>
           </Card>
-        </div> {/* end right col */}
+        </div>
 
-      </div> {/* end flex row */}
-    </div> {/* end max-w-7xl */}
-  </div> {/* end min-h-screen */}
+      </div>
+    </div>
+  </div>
   );
 }
