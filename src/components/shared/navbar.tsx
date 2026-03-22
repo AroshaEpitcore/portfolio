@@ -14,9 +14,7 @@ import {
   Github,
   Linkedin,
   MessageCircle,
-  ConciergeBell,
   BookOpen,
-  GitBranch,
   FileText,
   LogOut,
   ChevronDown,
@@ -29,10 +27,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
-  { name: "About", href: "/about", icon: User },
   { name: "Projects", href: "/projects", icon: FolderKanban },
-  { name: "GitHub", href: "/github", icon: GitBranch },
-  { name: "Services", href: "/services", icon: ConciergeBell },
   { name: "Blog", href: "/blog", icon: BookOpen },
   { name: "Contact", href: "/contact", icon: Mail },
   { name: "CV Generator", href: "/cv-generator", icon: FileText },
