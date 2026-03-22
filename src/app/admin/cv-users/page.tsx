@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { createClient } from "@/lib/supabase/client";
 import { FREE_GENERATIONS } from "@/lib/payment-config";
 import type { CVUser } from "@/types/database";
 import { toast } from "sonner";
@@ -28,17 +27,16 @@ export default function CVUsersPage() {
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("cv_users")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
+    try {
+      const res = await fetch("/api/admin/cv-users");
+      if (!res.ok) throw new Error(await res.text());
+      const data: CVUser[] = await res.json();
+      setUsers(data);
+    } catch {
       toast.error("Failed to load users");
-    } else {
-      setUsers(data ?? []);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -47,36 +45,34 @@ export default function CVUsersPage() {
 
   async function togglePaid(user: CVUser, paid: boolean) {
     setUpdating(user.id);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("cv_users")
-      .update({
-        is_paid: paid,
-        paid_at: paid ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
-    if (error) {
-      toast.error("Update failed: " + error.message);
-    } else {
-      toast.success(
-        paid
-          ? `${user.email} marked as paid`
-          : `Payment revoked for ${user.email}`
-      );
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === user.id
-            ? {
-                ...u,
-                is_paid: paid,
-                paid_at: paid ? new Date().toISOString() : null,
-              }
-            : u
-        )
-      );
+    try {
+      const res = await fetch("/api/admin/cv-users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id, is_paid: paid }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        toast.error("Update failed: " + err.error);
+      } else {
+        toast.success(
+          paid
+            ? `${user.email} marked as paid`
+            : `Payment revoked for ${user.email}`
+        );
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id
+              ? { ...u, is_paid: paid, paid_at: paid ? new Date().toISOString() : null }
+              : u
+          )
+        );
+      }
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setUpdating(null);
     }
-    setUpdating(null);
   }
 
   const filtered = users.filter((u) => {
