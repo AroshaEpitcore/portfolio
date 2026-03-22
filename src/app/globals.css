@@ -11,6 +11,22 @@
 .admin-layout label, .admin-layout label *,
 .admin-layout select { cursor: pointer !important; }
 
+/* Normal cursor on CV generator page */
+.cv-generator-page, .cv-generator-page * { cursor: auto !important; }
+.cv-generator-page a, .cv-generator-page a *,
+.cv-generator-page button, .cv-generator-page button *,
+.cv-generator-page [role='button'], .cv-generator-page [role='button'] *,
+.cv-generator-page input[type='submit'],
+.cv-generator-page input[type='button'],
+.cv-generator-page input, .cv-generator-page textarea, .cv-generator-page select,
+.cv-generator-page label, .cv-generator-page label * { cursor: pointer !important; }
+.cv-generator-page input[type='text'],
+.cv-generator-page input[type='email'],
+.cv-generator-page input[type='month'],
+.cv-generator-page input[type='url'],
+.cv-generator-page input[type='tel'],
+.cv-generator-page textarea { cursor: text !important; }
+
 #cursor-dot,
 #cursor-ring {
   position: fixed;

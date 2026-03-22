@@ -538,7 +538,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="cv-generator-page min-h-screen bg-background pt-20">
       {/* Payment modal */}
       <AnimatePresence>
         {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
