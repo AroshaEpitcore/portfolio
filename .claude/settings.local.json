@@ -31,7 +31,8 @@
       "Bash(ls /c/ravishanmga/portfolio/src/app/\\\\\\(frontend\\\\\\)/cv-generator/)",
       "Bash(ls \"/c/ravishanmga/portfolio/src/app/\\(frontend\\)/cv-generator/page.tsx\")",
       "Bash(ls \"/c/ravishanmga/portfolio/src/app/\\(frontend\\)/cv-generator/cv-generator-client.tsx\")",
-      "Bash(ls C:/ravishanmga/portfolio/src/app/\\\\\\(frontend\\\\\\)/cover-letter/)"
+      "Bash(ls C:/ravishanmga/portfolio/src/app/\\\\\\(frontend\\\\\\)/cover-letter/)",
+      "Bash(cd:*)"
     ]
   }
 }

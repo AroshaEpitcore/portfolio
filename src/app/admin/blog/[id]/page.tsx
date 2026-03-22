@@ -193,7 +193,6 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
               <MarkdownEditor
                 value={contentValue}
                 onChange={(v) => setValue("content", v, { shouldDirty: true })}
-                placeholder={`# Heading\n\nYour article content here...`}
                 minHeight={520}
               />
             </CardContent>

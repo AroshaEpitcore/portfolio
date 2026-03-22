@@ -159,7 +159,6 @@ export default function NewBlogPostPage() {
               <MarkdownEditor
                 value={contentValue}
                 onChange={(v) => setValue("content", v, { shouldDirty: true })}
-                placeholder={`# Heading\n\nYour article content here...\n\n## Section\n\nMore content...`}
                 minHeight={520}
               />
             </CardContent>

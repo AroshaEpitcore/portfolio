@@ -1,4 +1,4 @@
-1import { Metadata } from "next";
+import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { CVGeneratorClient } from "./cv-generator-client";
 import type { CVUser } from "@/types/database";
