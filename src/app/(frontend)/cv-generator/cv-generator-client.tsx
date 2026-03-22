@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
@@ -23,12 +24,27 @@ import {
   Info,
   AlertCircle,
   CheckCircle,
+  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PAYMENT_CONFIG, FREE_GENERATIONS } from "@/lib/payment-config";
 import type { CVFormData, CVStyles, CVUser } from "@/types/database";
+import { UserCVDocument } from "@/lib/cv-user-pdf";
 import { toast } from "sonner";
+
+// PDFViewer uses browser APIs — must be dynamically imported with ssr:false
+const PDFViewer = dynamic(
+  () => import("@react-pdf/renderer").then((m) => m.PDFViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+        Loading preview…
+      </div>
+    ),
+  }
+);
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -272,6 +288,58 @@ function Field({
   );
 }
 
+// ── Preview Drawer ────────────────────────────────────────────────────────────
+
+function PreviewDrawer({ data, onClose }: { data: CVFormData; onClose: () => void }) {
+  return (
+    <>
+      {/* Backdrop */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+      />
+
+      {/* Drawer — slides in from left */}
+      <motion.div
+        initial={{ x: "-100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "-100%" }}
+        transition={{ type: "spring", damping: 30, stiffness: 280 }}
+        className="fixed inset-y-0 left-0 z-50 flex w-full max-w-2xl flex-col border-r border-border bg-card shadow-2xl"
+      >
+        {/* Drawer header */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <Monitor className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold">CV Preview</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* PDF viewer fills remaining height */}
+        <div className="flex-1 overflow-hidden">
+          <PDFViewer
+            width="100%"
+            height="100%"
+            showToolbar={false}
+            style={{ border: "none" }}
+          >
+            <UserCVDocument data={data} />
+          </PDFViewer>
+        </div>
+      </motion.div>
+    </>
+  );
+}
+
 // ── Payment Modal ────────────────────────────────────────────────────────────
 
 function PaymentModal({ onClose }: { onClose: () => void }) {
@@ -421,6 +489,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
   const [showSample, setShowSample] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   const generationsUsed = cvUser?.generations_used ?? 0;
   const isPaid = cvUser?.is_paid ?? false;
@@ -539,6 +608,16 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
 
   return (
     <div className="cv-generator-page min-h-screen bg-background pt-20">
+      {/* Preview drawer */}
+      <AnimatePresence>
+        {showPreview && (
+          <PreviewDrawer
+            data={showSample ? sampleData : data}
+            onClose={() => setShowPreview(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Payment modal */}
       <AnimatePresence>
         {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
@@ -585,6 +664,17 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                   <Eye className="h-3.5 w-3.5" />
                 )}
                 {showSample ? "Hide Sample" : "View Sample"}
+              </Button>
+
+              {/* Preview button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowPreview(true)}
+                className="gap-2"
+              >
+                <Monitor className="h-3.5 w-3.5" />
+                Preview CV
               </Button>
 
               {/* Generate button */}
@@ -1424,11 +1514,19 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
               </div>
             </div>
 
-            {/* Sticky generate CTA */}
+            {/* Preview + Download CTAs */}
+            <Button
+              variant="outline"
+              onClick={() => setShowPreview(true)}
+              className="mt-5 w-full gap-2"
+            >
+              <Monitor className="h-4 w-4" />
+              Preview CV
+            </Button>
             <Button
               onClick={handleGenerate}
               disabled={generating}
-              className="mt-5 w-full gap-2 bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
+              className="mt-2 w-full gap-2 bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
             >
               {generating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
