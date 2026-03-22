@@ -8,8 +8,6 @@ import {
   Download,
   Eye,
   EyeOff,
-  AlertCircle,
-  CheckCircle,
   User,
   Briefcase,
   GraduationCap,
@@ -23,11 +21,14 @@ import {
   Copy,
   ExternalLink,
   Info,
+  AlertCircle,
+  CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PAYMENT_CONFIG, FREE_GENERATIONS } from "@/lib/payment-config";
 import type { CVFormData, CVStyles, CVUser } from "@/types/database";
+import { toast } from "sonner";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -420,8 +421,6 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
   const [showSample, setShowSample] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [genError, setGenError] = useState("");
 
   const generationsUsed = cvUser?.generations_used ?? 0;
   const isPaid = cvUser?.is_paid ?? false;
@@ -486,8 +485,6 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       return;
     }
     setGenerating(true);
-    setGenError("");
-    setSuccessMsg("");
 
     try {
       const res = await fetch("/api/cv/generate", {
@@ -503,7 +500,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       }
       if (!res.ok) {
         const err = await res.json();
-        setGenError(err.error || "Generation failed");
+        toast.error(err.error || "Generation failed");
         setGenerating(false);
         return;
       }
@@ -520,14 +517,10 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      const newCount = parseInt(
-        res.headers.get("X-Generations-Used") ?? "1"
-      );
-      setSuccessMsg(
-        `CV downloaded! (${newCount}/${isPaid ? "∞" : FREE_GENERATIONS} used)`
-      );
+      const newCount = parseInt(res.headers.get("X-Generations-Used") ?? "1");
+      toast.success(`CV downloaded! (${newCount}/${isPaid ? "∞" : FREE_GENERATIONS} used)`);
     } catch {
-      setGenError("Network error. Please try again.");
+      toast.error("Network error. Please try again.");
     } finally {
       setGenerating(false);
     }
@@ -542,51 +535,6 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
         {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
       </AnimatePresence>
 
-      {/* Toast notifications */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
-        <AnimatePresence>
-          {successMsg && (
-            <motion.div
-              key="success"
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-card px-4 py-3 shadow-xl shadow-black/10"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-500/10">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <p className="text-sm font-medium text-foreground">{successMsg}</p>
-              <button
-                onClick={() => setSuccessMsg("")}
-                className="ml-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </motion.div>
-          )}
-          {genError && (
-            <motion.div
-              key="error"
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-card px-4 py-3 shadow-xl shadow-black/10"
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/10">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-              </div>
-              <p className="text-sm font-medium text-foreground">{genError}</p>
-              <button
-                onClick={() => setGenError("")}
-                className="ml-2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
 
       {/* Page header */}
       <div className="border-b border-border/50 bg-card/50">
