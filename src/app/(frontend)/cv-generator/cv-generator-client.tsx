@@ -1752,11 +1752,11 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             <h3 className="mb-4 text-sm font-semibold text-foreground">CV Style</h3>
 
             {/* Font family */}
-            <div className="mb-5">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <div className="mb-4">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Font Family
               </p>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {FONT_OPTIONS.map((f) => (
                   <button
                     key={f.key}
@@ -1768,7 +1768,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                         styles: { ...d.styles, fontFamily: f.key },
                       }))
                     }
-                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                    className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-all ${
                       data.styles.fontFamily === f.key
                         ? "border-primary bg-primary/5"
                         : "border-border hover:border-primary/40 hover:bg-muted/30"
@@ -1776,7 +1776,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                   >
                     <span
                       style={{ fontFamily: f.stack }}
-                      className="w-8 text-center text-base font-bold"
+                      className="w-7 text-center text-sm font-bold"
                     >
                       Aa
                     </span>
@@ -1785,7 +1785,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                       <p className="text-[10px] text-muted-foreground">{f.sub}</p>
                     </div>
                     {data.styles.fontFamily === f.key && (
-                      <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                      <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                     )}
                   </button>
                 ))}
@@ -1793,18 +1793,18 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             </div>
 
             {/* Accent color */}
-            <div className="mb-5">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <div className="mb-4">
+              <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Accent Color
               </p>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-7 gap-1.5">
                 {COLOR_OPTIONS.map((c) => (
                   <button
                     key={c.color}
                     type="button"
                     title={c.label}
                     onClick={() => setStyle("accentColor", c.color)}
-                    className={`relative h-9 w-full rounded-lg transition-all hover:scale-105 ${
+                    className={`relative h-7 w-full rounded-md transition-all hover:scale-105 ${
                       data.styles.accentColor === c.color
                         ? "ring-2 ring-offset-2 ring-offset-background"
                         : ""
@@ -1823,7 +1823,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
                 ))}
               </div>
               {/* Hex color input */}
-              <div className="mt-3 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2">
                 <div
                   className="h-7 w-7 shrink-0 rounded border border-border"
                   style={{ backgroundColor: data.styles.accentColor }}
