@@ -15,7 +15,9 @@ import {
   ChevronUp,
   FileText,
   X,
+  ExternalLink,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/client";
@@ -147,7 +149,7 @@ export default function UsersPage() {
     if (error) {
       toast.error("Failed to load users: " + error.message);
     } else {
-      setUsers(data ?? []);
+      setUsers((data ?? []) as CVUser[]);
     }
     setLoading(false);
   }, [sortField, sortDir]);
@@ -469,6 +471,18 @@ export default function UsersPage() {
                           >
                             <RotateCcw className="h-3 w-3" />
                           </Button>
+
+                          {/* View details */}
+                          <Link href={`/admin/users/${user.id}`}>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 gap-1 px-2 text-xs"
+                              title="View user details"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </Button>
+                          </Link>
 
                           {/* Delete */}
                           <Button

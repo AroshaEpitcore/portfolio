@@ -36,7 +36,7 @@ export default function CVUsersPage() {
     if (error) {
       toast.error("Failed to load users");
     } else {
-      setUsers(data ?? []);
+      setUsers((data ?? []) as CVUser[]);
     }
     setLoading(false);
   }, []);

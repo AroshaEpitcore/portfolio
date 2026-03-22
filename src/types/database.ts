@@ -510,6 +510,7 @@ export interface Database {
           is_paid: boolean;
           payment_reference: string | null;
           paid_at: string | null;
+          saved_cv_data: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -521,6 +522,7 @@ export interface Database {
           is_paid?: boolean;
           payment_reference?: string | null;
           paid_at?: string | null;
+          saved_cv_data?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -532,6 +534,7 @@ export interface Database {
           is_paid?: boolean;
           payment_reference?: string | null;
           paid_at?: string | null;
+          saved_cv_data?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -598,6 +601,7 @@ export interface CVUser {
   is_paid: boolean;
   payment_reference: string | null;
   paid_at: string | null;
+  saved_cv_data?: CVFormData | null;
   created_at: string;
   updated_at: string;
 }
@@ -664,5 +668,31 @@ export interface CVFormData {
     issuer: string;
     date: string;
     url: string;
+  }>;
+  languages: Array<{
+    id: string;
+    language: string;
+    proficiency: "Beginner" | "Intermediate" | "Fluent" | "Native";
+  }>;
+  volunteer: Array<{
+    id: string;
+    organization: string;
+    role: string;
+    startDate: string;
+    endDate: string;
+    isCurrent: boolean;
+    description: string;
+  }>;
+  references: Array<{
+    id: string;
+    name: string;
+    company: string;
+    contact: string;
+    available: boolean;
+  }>;
+  customSections: Array<{
+    id: string;
+    title: string;
+    content: string;
   }>;
 }

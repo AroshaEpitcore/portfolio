@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { CVGeneratorClient } from "./cv-generator-client";
+import type { CVUser } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "CV Generator",
@@ -36,7 +37,7 @@ export default async function CVGeneratorPage() {
             }
           : null
       }
-      cvUser={cvUserRecord}
+      cvUser={cvUserRecord as CVUser | null}
     />
   );
 }

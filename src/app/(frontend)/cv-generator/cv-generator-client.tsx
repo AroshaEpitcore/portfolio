@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -25,6 +25,7 @@ import {
   AlertCircle,
   CheckCircle,
   Monitor,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ import { PAYMENT_CONFIG, FREE_GENERATIONS } from "@/lib/payment-config";
 import type { CVFormData, CVStyles, CVUser } from "@/types/database";
 import { UserCVDocument } from "@/lib/cv-user-pdf";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
 
 // PDFViewer uses browser APIs — must be dynamically imported with ssr:false
 const PDFViewer = dynamic(
@@ -84,6 +86,18 @@ function emptyProject() {
 function emptyCert() {
   return { id: uid(), name: "", issuer: "", date: "", url: "" };
 }
+function emptyLang() {
+  return { id: uid(), language: "", proficiency: "Fluent" as const };
+}
+function emptyVolunteer() {
+  return { id: uid(), organization: "", role: "", startDate: "", endDate: "", isCurrent: false, description: "" };
+}
+function emptyRef() {
+  return { id: uid(), name: "", company: "", contact: "", available: false };
+}
+function emptyCustom() {
+  return { id: uid(), title: "", content: "" };
+}
 
 // ── Style options ─────────────────────────────────────────────────────────────
 
@@ -121,6 +135,10 @@ const defaultData: CVFormData = {
   skills: [{ id: "sk-1", category: "", items: "" }],
   projects: [{ id: "proj-1", name: "", description: "", techStack: "", url: "" }],
   certifications: [{ id: "cert-1", name: "", issuer: "", date: "", url: "" }],
+  languages: [{ id: "lang-1", language: "", proficiency: "Fluent" as const }],
+  volunteer: [] as Array<{ id: string; organization: string; role: string; startDate: string; endDate: string; isCurrent: boolean; description: string }>,
+  references: [{ id: "ref-1", name: "", company: "", contact: "", available: false }],
+  customSections: [] as Array<{ id: string; title: string; content: string }>,
 };
 
 const sampleData: CVFormData = {
@@ -200,6 +218,29 @@ const sampleData: CVFormData = {
       date: "2023-03",
       url: "https://aws.amazon.com",
     },
+  ],
+  languages: [
+    { id: "1", language: "English", proficiency: "Fluent" as const },
+    { id: "2", language: "Sinhala", proficiency: "Native" as const },
+    { id: "3", language: "Tamil", proficiency: "Beginner" as const },
+  ],
+  volunteer: [
+    {
+      id: "1",
+      organization: "Code for Lanka",
+      role: "Volunteer Developer",
+      startDate: "2021-06",
+      endDate: "2022-01",
+      isCurrent: false,
+      description: "Built a web platform for NGO operations\nTrained 10 local staff on using the system",
+    },
+  ],
+  references: [
+    { id: "1", name: "Jane Cooper", company: "Tech Corp", contact: "jane@techcorp.com", available: false },
+    { id: "2", name: "", company: "", contact: "", available: true },
+  ],
+  customSections: [
+    { id: "1", title: "Publications", content: "Co-authored \"Modern Web Development with Next.js\" — TechBooks Publishing, 2023" },
   ],
 };
 
@@ -485,7 +526,18 @@ interface Props {
 }
 
 export function CVGeneratorClient({ user, cvUser }: Props) {
-  const [data, setData] = useState<CVFormData>(defaultData);
+  const [data, setData] = useState<CVFormData>(() => {
+    const saved = cvUser?.saved_cv_data as CVFormData | null;
+    if (!saved) return defaultData;
+    return {
+      ...defaultData,
+      ...saved,
+      languages: saved.languages ?? defaultData.languages,
+      volunteer: saved.volunteer ?? defaultData.volunteer,
+      references: saved.references ?? defaultData.references,
+      customSections: saved.customSections ?? defaultData.customSections,
+    };
+  });
   const [showSample, setShowSample] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
@@ -496,8 +548,8 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
   const remaining = Math.max(0, FREE_GENERATIONS - generationsUsed);
   const isLimited = generationsUsed >= FREE_GENERATIONS && !isPaid;
 
-  // Suppress unused variable warning — user prop available for future personalization
-  void user;
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // ── Field updaters ─────────────────────────────────────────────────────────
 
@@ -512,6 +564,10 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       | "skills"
       | "projects"
       | "certifications"
+      | "languages"
+      | "volunteer"
+      | "references"
+      | "customSections"
   >(key: K, id: string, field: string, value: unknown) {
     setData((d) => ({
       ...d,
@@ -528,6 +584,10 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       | "skills"
       | "projects"
       | "certifications"
+      | "languages"
+      | "volunteer"
+      | "references"
+      | "customSections"
   >(key: K, factory: () => object) {
     setData((d) => ({ ...d, [key]: [...(d[key] as object[]), factory()] }));
   }
@@ -539,12 +599,41 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
       | "skills"
       | "projects"
       | "certifications"
+      | "languages"
+      | "volunteer"
+      | "references"
+      | "customSections"
   >(key: K, id: string) {
     setData((d) => ({
       ...d,
       [key]: (d[key] as Array<{ id: string }>).filter((i) => i.id !== id),
     }));
   }
+
+  // ── Auto-save ───────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!user || showSample) return;
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setSaveStatus("saving");
+    saveTimerRef.current = setTimeout(async () => {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("cv_users")
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update({ saved_cv_data: data as any, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (!error) {
+        setSaveStatus("saved");
+        setTimeout(() => setSaveStatus("idle"), 2000);
+      } else {
+        setSaveStatus("idle");
+      }
+    }, 1500);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [data, user, showSample]);
 
   // ── Generate ───────────────────────────────────────────────────────────────
 
@@ -626,7 +715,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
 
       {/* Page header */}
       <div className="border-b border-border/50 bg-card/50">
-        <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold">CV Generator</h1>
@@ -636,6 +725,17 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {/* Auto-save indicator */}
+              {saveStatus !== "idle" && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  {saveStatus === "saving" ? (
+                    <><RefreshCw className="h-3 w-3 animate-spin" /> Saving…</>
+                  ) : (
+                    <><CheckCircle className="h-3 w-3 text-green-500" /> Saved</>
+                  )}
+                </span>
+              )}
+
               {/* Usage badge */}
               <div
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ring-1 ${
@@ -1366,6 +1466,235 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
               onClick={() => addItem("certifications", emptyCert)}
               label="Add Certification"
             />
+          )}
+        </Card>
+
+        {/* ── Languages ── */}
+        <Card>
+          <SectionHeader icon={FileText} label="Languages" />
+          <div className="space-y-3">
+            {(showSample ? sampleData.languages : data.languages).map((lang) => (
+              <div key={lang.id} className="relative flex items-center gap-3">
+                {!showSample && data.languages.length > 1 && (
+                  <button
+                    onClick={() => removeItem("languages", lang.id)}
+                    className="absolute -right-1 -top-1 rounded-full p-0.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <div className="flex-1">
+                  <Input
+                    value={lang.language}
+                    onChange={(e) => !showSample && updateList("languages", lang.id, "language", e.target.value)}
+                    placeholder="e.g. English, Sinhala, Tamil"
+                    readOnly={showSample}
+                  />
+                </div>
+                <select
+                  value={lang.proficiency}
+                  onChange={(e) => !showSample && updateList("languages", lang.id, "proficiency", e.target.value)}
+                  disabled={showSample}
+                  className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  {["Beginner", "Intermediate", "Fluent", "Native"].map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+          {!showSample && (
+            <AddButton onClick={() => addItem("languages", emptyLang)} label="Add Language" />
+          )}
+        </Card>
+
+        {/* ── Volunteer / Extra-Curricular ── */}
+        <Card>
+          <SectionHeader icon={Award} label="Volunteer & Extra-Curricular" />
+          <div className="space-y-4">
+            {(showSample ? sampleData.volunteer : data.volunteer).map((vol, i) => (
+              <div key={vol.id} className="relative rounded-xl border border-border/60 bg-background p-4">
+                {!showSample && data.volunteer.length > 0 && (
+                  <button
+                    onClick={() => removeItem("volunteer", vol.id)}
+                    className="absolute right-3 top-3 rounded-lg p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                <div className="mb-1 text-xs font-semibold text-muted-foreground">
+                  Entry #{i + 1}
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Organisation">
+                    <Input
+                      value={vol.organization}
+                      onChange={(e) => !showSample && updateList("volunteer", vol.id, "organization", e.target.value)}
+                      placeholder="Code for Lanka"
+                      readOnly={showSample}
+                    />
+                  </Field>
+                  <Field label="Role">
+                    <Input
+                      value={vol.role}
+                      onChange={(e) => !showSample && updateList("volunteer", vol.id, "role", e.target.value)}
+                      placeholder="Volunteer Developer"
+                      readOnly={showSample}
+                    />
+                  </Field>
+                  <Field label="Start Date">
+                    <Input
+                      type="month"
+                      value={vol.startDate}
+                      onChange={(e) => !showSample && updateList("volunteer", vol.id, "startDate", e.target.value)}
+                      readOnly={showSample}
+                    />
+                  </Field>
+                  <Field label="End Date">
+                    <Input
+                      type="month"
+                      value={vol.endDate}
+                      onChange={(e) => !showSample && updateList("volunteer", vol.id, "endDate", e.target.value)}
+                      readOnly={showSample || vol.isCurrent}
+                    />
+                  </Field>
+                  <div className="flex items-center gap-2 sm:col-span-2">
+                    <input
+                      type="checkbox"
+                      id={`vol-current-${vol.id}`}
+                      checked={vol.isCurrent}
+                      onChange={(e) => !showSample && updateList("volunteer", vol.id, "isCurrent", e.target.checked)}
+                      disabled={showSample}
+                      className="h-4 w-4 rounded border-border"
+                    />
+                    <label htmlFor={`vol-current-${vol.id}`} className="text-xs text-muted-foreground">
+                      Currently active
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <Field label="Description">
+                    <Textarea
+                      value={vol.description}
+                      onChange={(v) => !showSample && updateList("volunteer", vol.id, "description", v)}
+                      placeholder="Describe your contributions…"
+                      rows={2}
+                    />
+                  </Field>
+                </div>
+              </div>
+            ))}
+          </div>
+          {!showSample && (
+            <AddButton onClick={() => addItem("volunteer", emptyVolunteer)} label="Add Volunteer Entry" />
+          )}
+        </Card>
+
+        {/* ── References ── */}
+        <Card>
+          <SectionHeader icon={User} label="References" />
+          <div className="space-y-4">
+            {(showSample ? sampleData.references : data.references).map((ref) => (
+              <div key={ref.id} className="relative rounded-xl border border-border/60 bg-background p-4">
+                {!showSample && data.references.length > 1 && (
+                  <button
+                    onClick={() => removeItem("references", ref.id)}
+                    className="absolute right-3 top-3 rounded-lg p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                <div className="mb-3 flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`ref-avail-${ref.id}`}
+                    checked={ref.available}
+                    onChange={(e) => !showSample && updateList("references", ref.id, "available", e.target.checked)}
+                    disabled={showSample}
+                    className="h-4 w-4 rounded border-border"
+                  />
+                  <label htmlFor={`ref-avail-${ref.id}`} className="text-xs font-medium text-muted-foreground">
+                    Available on request
+                  </label>
+                </div>
+                {!ref.available && (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Full Name">
+                      <Input
+                        value={ref.name}
+                        onChange={(e) => !showSample && updateList("references", ref.id, "name", e.target.value)}
+                        placeholder="Jane Cooper"
+                        readOnly={showSample}
+                      />
+                    </Field>
+                    <Field label="Company">
+                      <Input
+                        value={ref.company}
+                        onChange={(e) => !showSample && updateList("references", ref.id, "company", e.target.value)}
+                        placeholder="Tech Corp"
+                        readOnly={showSample}
+                      />
+                    </Field>
+                    <Field label="Email / Phone">
+                      <Input
+                        value={ref.contact}
+                        onChange={(e) => !showSample && updateList("references", ref.id, "contact", e.target.value)}
+                        placeholder="jane@techcorp.com or +94 77 000 0000"
+                        readOnly={showSample}
+                      />
+                    </Field>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {!showSample && (
+            <AddButton onClick={() => addItem("references", emptyRef)} label="Add Reference" />
+          )}
+        </Card>
+
+        {/* ── Custom Sections ── */}
+        <Card>
+          <SectionHeader icon={FileText} label="Custom Sections" />
+          <p className="mb-4 text-xs text-muted-foreground -mt-3">
+            Add any extra sections — Publications, Awards, Hobbies, etc.
+          </p>
+          <div className="space-y-4">
+            {(showSample ? sampleData.customSections : data.customSections).map((cs, i) => (
+              <div key={cs.id} className="relative rounded-xl border border-border/60 bg-background p-4">
+                {!showSample && data.customSections.length > 0 && (
+                  <button
+                    onClick={() => removeItem("customSections", cs.id)}
+                    className="absolute right-3 top-3 rounded-lg p-1 text-muted-foreground hover:bg-red-500/10 hover:text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+                <div className="mb-1 text-xs font-semibold text-muted-foreground">Section #{i + 1}</div>
+                <div className="space-y-3">
+                  <Field label="Section Title">
+                    <Input
+                      value={cs.title}
+                      onChange={(e) => !showSample && updateList("customSections", cs.id, "title", e.target.value)}
+                      placeholder="Publications, Awards, Hobbies…"
+                      readOnly={showSample}
+                    />
+                  </Field>
+                  <Field label="Content">
+                    <Textarea
+                      value={cs.content}
+                      onChange={(v) => !showSample && updateList("customSections", cs.id, "content", v)}
+                      placeholder="Describe or list items here…"
+                      rows={3}
+                    />
+                  </Field>
+                </div>
+              </div>
+            ))}
+          </div>
+          {!showSample && (
+            <AddButton onClick={() => addItem("customSections", emptyCustom)} label="Add Custom Section" />
           )}
         </Card>
 

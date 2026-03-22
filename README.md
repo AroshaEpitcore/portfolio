@@ -137,20 +137,23 @@ src/
 
 ### CV Generator (User Tool)
 - Public users create an account or log in via `/auth/login` or `/auth/signup`
-- Fill in a multi-section form: Personal Info, Summary, Experience, Education, Skills, Projects, Certifications
+- Fill in a multi-section form: Personal Info, Summary, Experience, Education, Skills, Projects, Certifications, **Languages, Volunteer, References, Custom Sections**
 - **2 free PDF generations** per account
 - After 2 uses, payment of **Rs. 250** is required (HNB bank transfer)
-- Admin manually marks users as paid from `/admin/cv-users`
+- Admin manually marks users as paid from `/admin/cv-users` or `/admin/users`
 - **PDF is ATS-optimized** — real selectable text, standard PDF fonts (Helvetica / Times-Roman / Courier), skills as plain text with `·` separators for ATS parsing
 - **Style customization** — font family selector (Modern/Classic/Technical) + 7 accent color swatches with live mini-preview, in a sticky right panel
 - **Sample CV** — toggle sample data to see how the output looks before filling in your own
+- **Auto-save** — form data is automatically saved to Supabase (`cv_users.saved_cv_data`) after 1.5 s of inactivity; reloads on next visit
+- **CV Preview** — "Preview CV" button opens a smooth left-side drawer with a live PDF render of the current form data
 - Normal browser cursor on CV generator page for better form usability
 - Error/success messages shown as top-right Sonner toasts (matches admin style)
 
 ### Admin Dashboard
 - Protected by middleware — only the admin email (`mgaravishan@gmail.com`) can access `/admin/*`; other authenticated users (CV generator users) are redirected to `/admin/login`
 - Full CRUD for all content types
-- **Users page** (`/admin/users`) — comprehensive user management with sortable table, search, filter by status, per-row actions: Mark Paid, Revoke, Reset Generations (with confirm dialog), Delete (with confirm dialog), and a slide-in detail drawer
+- **Users page** (`/admin/users`) — comprehensive user management with sortable table, search, filter by status, per-row actions: Mark Paid, Revoke, Reset Generations (with confirm dialog), Delete (with confirm dialog), and a slide-in detail drawer. Each row has a link icon that navigates to the full user detail page
+- **User Detail page** (`/admin/users/[id]`) — full user profile, stats, generation history, one-click actions, and a **Preview CV** button for every generated CV (opens right-side drawer with live PDF render)
 - **CV Users page** (`/admin/cv-users`) — simpler view with Mark Paid / Revoke buttons only
 - Image uploads to Supabase Storage
 - Contact submission inbox with read/unread tracking
@@ -573,7 +576,20 @@ CREATE POLICY "Auth full access cv_generations"
 
 ---
 
-### SQL 11 — RLS Policies for User Deletion (Admin Users Page)
+### SQL 11 — Add Auto-Save Column to cv_users
+
+Run this to support the form auto-save feature. The `saved_cv_data` column stores the user's in-progress CV form data so they can resume later.
+
+```sql
+ALTER TABLE cv_users ADD COLUMN IF NOT EXISTS saved_cv_data JSONB;
+```
+
+> This is a non-destructive migration — existing rows will have `NULL` for this column.
+> The column is written by the CV generator form (browser client, RLS `auth.uid() = id`) and read back on next visit.
+
+---
+
+### SQL 12 — RLS Policies for User Deletion (Admin Users Page)
 
 The `/admin/users` page can delete a user's CV history and then the user record itself. The policies below allow the authenticated admin to delete from both tables.
 
@@ -596,7 +612,7 @@ CREATE POLICY "Auth delete cv_users"
 
 ---
 
-### SQL 12 — Supabase Storage Bucket (Image Uploads)
+### SQL 13 — Supabase Storage Bucket (Image Uploads)
 
 ```sql
 -- Create public storage bucket named 'portfolio'
@@ -882,11 +898,13 @@ Tracks each public user who has used the CV Generator. One row per Supabase auth
 | is_paid | BOOLEAN | Set to `true` by admin after confirming bank transfer |
 | payment_reference | TEXT | Optional note added by admin when marking paid |
 | paid_at | TIMESTAMPTZ | Timestamp of when admin marked as paid |
+| saved_cv_data | JSONB | Auto-saved form data (debounced, 1.5 s) — reloaded on next visit |
 | created_at | TIMESTAMPTZ | Auto |
-| updated_at | TIMESTAMPTZ | Updated on each generation |
+| updated_at | TIMESTAMPTZ | Updated on each generation or auto-save |
 
 > Row is auto-created via `upsert` when the user first generates a CV.
 > Users with `generations_used >= 2` and `is_paid = false` receive an HTTP 402 response and see the payment modal.
+> `saved_cv_data` stores the full `CVFormData` including the new Languages, Volunteer, References, and Custom Sections.
 
 ---
 
@@ -1063,7 +1081,8 @@ The middleware also refreshes Supabase auth tokens on every request (required fo
 | `/admin/blog/[id]` | `blog_posts` (UPDATE) |
 | `/admin/social` | `social_links` |
 | `/admin/contact` | `contact_info` + `contact_submissions` |
-| `/admin/users` | `cv_users` + `cv_generations` — full CRUD: mark paid, revoke, reset generations, delete user + all their CV history |
+| `/admin/users` | `cv_users` + `cv_generations` — full CRUD: mark paid, revoke, reset generations, delete, link to detail page |
+| `/admin/users/[id]` | `cv_users` + `cv_generations` — full user profile, generation history, preview any CV as PDF |
 | `/admin/cv-users` | `cv_users` — simplified view: mark paid, revoke access |
 
 ---
@@ -1158,6 +1177,9 @@ When you need to add a new table/section in future:
 - `features` (services), `tech_stack` (projects), and `tags` (blog_posts) are PostgreSQL `TEXT[]` arrays — entered in admin as comma-separated text and split on save
 - Blog `content` is stored as plain Markdown and rendered on the frontend with `react-markdown` inside `blog-content.tsx`
 - `cv_users.id` must equal `auth.users.id` — the upsert in `/api/cv/generate` handles creation automatically on first use
+- `cv_users.saved_cv_data` is written by the browser client using the anon key under the user's own session (RLS `auth.uid() = id`). Run SQL 11 before deploying the auto-save feature
+- The CV form now has 4 additional sections: **Languages** (language + proficiency level), **Volunteer & Extra-Curricular** (same structure as experience), **References** (name/company/contact or "Available on request"), **Custom Sections** (free-form title + content). All are optional and rendered in the PDF when filled
+- `/admin/users/[id]` shows the user's full generation history and a PDF preview button per generation. "Preview Draft" shows the user's latest auto-saved in-progress data
 - The `achievements-section.tsx` component returns `null` if the achievements array is empty — safe to leave the table empty until you add entries
 - The `testimonials-section.tsx` component returns `null` if the testimonials array is empty — safe to leave the table empty
 - Admin identity is determined by email: middleware checks `user.email === process.env.ADMIN_EMAIL` (defaults to `mgaravishan@gmail.com`) — CV generator users are blocked from `/admin/*` even though they are authenticated

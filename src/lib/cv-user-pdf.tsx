@@ -256,6 +256,46 @@ function buildStyles(fontKey: keyof typeof FONT_MAP, accent: string) {
       paddingVertical: 3,
       marginBottom: 4,
     },
+
+    // ── Language ───────────────────────────────────────────────────────────
+    langRow: {
+      flexDirection: "row" as const,
+      justifyContent: "space-between" as const,
+      alignItems: "center" as const,
+      marginBottom: 4,
+    },
+    langName: {
+      fontFamily: f.reg,
+      fontSize: 8,
+      color: TEXT,
+    },
+    langProf: {
+      fontFamily: f.italic,
+      fontSize: 7,
+      color: MUTED,
+    },
+
+    // ── Reference ──────────────────────────────────────────────────────────
+    refEntry: { marginBottom: 7 },
+    refName: {
+      fontFamily: f.bold,
+      fontSize: 8,
+      color: TEXT,
+      marginBottom: 1,
+    },
+    refSub: {
+      fontFamily: f.reg,
+      fontSize: 7.5,
+      color: MUTED,
+    },
+
+    // ── Custom section content ─────────────────────────────────────────────
+    customContent: {
+      fontFamily: f.reg,
+      fontSize: 8.5,
+      color: "#374151",
+      lineHeight: 1.6,
+    },
   };
 }
 
@@ -293,12 +333,20 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
   const s       = buildStyles(fontKey, accent);
 
   const { personal, summary, experience, education, skills, projects, certifications } = data;
+  const languages     = data.languages     ?? [];
+  const volunteer     = data.volunteer     ?? [];
+  const references    = data.references    ?? [];
+  const customSections= data.customSections?? [];
 
   const hasExp   = experience.some((e) => e.company);
   const hasProj  = projects.some((p) => p.name);
   const hasEdu   = education.some((e) => e.institution);
   const hasSkill = skills.some((g) => g.category && g.items);
   const hasCert  = certifications.some((c) => c.name);
+  const hasLang  = languages.some((l) => l.language);
+  const hasVol   = volunteer.some((v) => v.organization);
+  const hasRef   = references.some((r) => r.available || r.name);
+  const allRefAvailable = hasRef && references.filter((r) => r.available || r.name).every((r) => r.available);
 
   // Build contact items with separators
   const contacts: { type: "text" | "link"; value: string; href?: string }[] = [];
@@ -393,6 +441,55 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                 ))}
               </Section>
             )}
+
+            {/* Volunteer & Extra-Curricular */}
+            {hasVol && (
+              <Section s={s} label="Volunteer & Extra-Curricular">
+                {volunteer.filter((v) => v.organization).map((vol) => (
+                  <View key={vol.id} style={s.entry}>
+                    <View style={s.entryHeader}>
+                      <Text style={s.entryTitle}>{vol.role}</Text>
+                      <Text style={s.entryDate}>
+                        {fmtDate(vol.startDate)}{vol.startDate ? " – " : ""}
+                        {vol.isCurrent ? "Present" : fmtDate(vol.endDate)}
+                      </Text>
+                    </View>
+                    <Text style={s.entryOrg}>{vol.organization}</Text>
+                    {vol.description &&
+                      parseBullets(vol.description).map((b, i) => (
+                        <Bullet key={i} s={s} text={b} />
+                      ))}
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            {/* Custom Sections */}
+            {customSections.filter((cs) => cs.title && cs.content).map((cs) => (
+              <Section key={cs.id} s={s} label={cs.title}>
+                <Text style={s.customContent}>{cs.content}</Text>
+              </Section>
+            ))}
+
+            {/* References (detailed) */}
+            {hasRef && !allRefAvailable && (
+              <Section s={s} label="References">
+                {references.filter((r) => r.available || r.name).map((ref) => (
+                  <View key={ref.id} style={s.refEntry}>
+                    {ref.available ? (
+                      <Text style={s.refSub}>Available upon request</Text>
+                    ) : (
+                      <>
+                        <Text style={s.refName}>{ref.name}</Text>
+                        <Text style={s.refSub}>
+                          {ref.company}{ref.contact ? `  ·  ${ref.contact}` : ""}
+                        </Text>
+                      </>
+                    )}
+                  </View>
+                ))}
+              </Section>
+            )}
           </View>
 
           {/* ── SIDE COLUMN ── */}
@@ -403,10 +500,11 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
               <Section s={s} label="Education">
                 {education.filter((e) => e.institution).map((edu) => (
                   <View key={edu.id} style={s.entry}>
-                    <Text style={s.entryTitle}>{edu.degree}</Text>
-                    {edu.fieldOfStudy && (
-                      <Text style={s.entryOrgSub}>{edu.fieldOfStudy}</Text>
-                    )}
+                    <Text style={s.entryTitle}>
+                      {edu.fieldOfStudy
+                        ? `${edu.degree} — ${edu.fieldOfStudy}`
+                        : edu.degree}
+                    </Text>
                     <Text style={s.entryOrg}>{edu.institution}</Text>
                     <Text style={s.entryDate}>
                       {fmtDate(edu.startDate)}{edu.startDate ? " – " : ""}
@@ -455,6 +553,25 @@ export function UserCVDocument({ data }: { data: CVFormData }) {
                     </Text>
                   </View>
                 ))}
+              </Section>
+            )}
+
+            {/* Languages */}
+            {hasLang && (
+              <Section s={s} label="Languages">
+                {languages.filter((l) => l.language).map((lang) => (
+                  <View key={lang.id} style={s.langRow}>
+                    <Text style={s.langName}>{lang.language}</Text>
+                    <Text style={s.langProf}>{lang.proficiency}</Text>
+                  </View>
+                ))}
+              </Section>
+            )}
+
+            {/* References — "available on request" only */}
+            {hasRef && allRefAvailable && (
+              <Section s={s} label="References">
+                <Text style={s.refSub}>Available upon request</Text>
               </Section>
             )}
           </View>
