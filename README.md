@@ -170,10 +170,12 @@ src/
 - Auto-save CV data to `cv_users.saved_cv_data`
 
 #### Cover Letter Generator (`/cover-letter`)
-- Free, no generation limits
+- Auth-gated (Supabase magic link sign-in)
+- 2 free PDF generations, unlimited with paid account (same limit as CV Generator)
 - Form sections: Personal Info, Recipient, Job Details, Letter Content
 - Professional A4 letterhead with accent colour theming
-- Same UI pattern and live preview as CV Generator
+- Same UI pattern, generation counter badge, and payment modal as CV Generator
+- Each generation saved to `cl_generations` table for admin history tracking
 
 ---
 
@@ -195,7 +197,7 @@ All admin routes are protected — requires Supabase authentication.
 | **Achievements** | Certifications, awards, credentials with images |
 | **Team** | Team member profiles with social links |
 | **Contact** | View contact form submissions, mark as read/unread, delete |
-| **CV Users** | Manage CV Generator users — view usage, toggle paid status |
+| **CV & CL Users** | Manage CV & Cover Letter Generator users — view CV and cover letter usage counts, toggle paid status, reset individual counters, view full CV generation history with PDF preview, view full cover letter history with company/position details, delete users |
 
 ---
 
@@ -207,9 +209,23 @@ The `profiles` table includes an `is_available` boolean column. In the admin Pro
 - When `true`: the animated "Available for work" badge shows in the hero section (top badge + floating badge)
 - When `false`: both badges are hidden
 
-**Required DB migration:**
+**Required DB migrations:**
 ```sql
-ALTER TABLE profiles ADD COLUMN is_available boolean NOT NULL DEFAULT true;
+-- Open to Work toggle
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS is_available boolean NOT NULL DEFAULT true;
+
+-- Cover Letter generation tracking
+ALTER TABLE cv_users ADD COLUMN IF NOT EXISTS cl_generations_used integer NOT NULL DEFAULT 0;
+
+-- Cover Letter history log
+CREATE TABLE IF NOT EXISTS cl_generations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES cv_users(id) ON DELETE CASCADE,
+  cl_data jsonb NOT NULL,
+  generated_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS cl_generations_user_id_idx ON cl_generations(user_id);
+CREATE INDEX IF NOT EXISTS cl_generations_generated_at_idx ON cl_generations(generated_at DESC);
 ```
 
 ---
@@ -231,8 +247,9 @@ ALTER TABLE profiles ADD COLUMN is_available boolean NOT NULL DEFAULT true;
 | `social_links` | Social media links |
 | `contact_info` | Email, phone, location, availability text |
 | `contact_submissions` | Contact form messages with `is_read` flag |
-| `cv_users` | CV Generator user records, generation count, payment status |
-| `cv_generations` | Log of CV generation events |
+| `cv_users` | CV & Cover Letter Generator user records — `generations_used`, `cl_generations_used`, `is_paid` |
+| `cv_generations` | Per-generation CV log with full `cv_data` JSON |
+| `cl_generations` | Per-generation Cover Letter log with full `cl_data` JSON |
 
 ---
 

@@ -92,8 +92,9 @@ function UserDetail({ user, onClose }: { user: CVUser; onClose: () => void }) {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Generations Used", value: user.generations_used },
-            { label: "Free Limit", value: FREE_GENERATIONS },
+            { label: "CVs Generated", value: user.generations_used },
+            { label: "Cover Letters", value: user.cl_generations_used ?? 0 },
+            { label: "Free Limit (each)", value: FREE_GENERATIONS },
             { label: "Status", value: user.is_paid ? "Paid" : isLimited ? "Awaiting Payment" : "Free" },
             { label: "Paid At", value: user.paid_at ? new Date(user.paid_at).toLocaleDateString() : "—" },
           ].map((s) => (
@@ -244,8 +245,9 @@ export default function UsersPage() {
   const stats = {
     total: users.length,
     paid: users.filter((u) => u.is_paid).length,
-    limited: users.filter((u) => u.generations_used >= FREE_GENERATIONS && !u.is_paid).length,
-    totalGens: users.reduce((s, u) => s + u.generations_used, 0),
+    limited: users.filter((u) => (u.generations_used >= FREE_GENERATIONS || (u.cl_generations_used ?? 0) >= FREE_GENERATIONS) && !u.is_paid).length,
+    totalCVs: users.reduce((s, u) => s + u.generations_used, 0),
+    totalCLs: users.reduce((s, u) => s + (u.cl_generations_used ?? 0), 0),
   };
 
   return (
@@ -272,7 +274,7 @@ export default function UsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Users</h1>
-          <p className="text-sm text-muted-foreground">Manage CV Generator accounts and access</p>
+          <p className="text-sm text-muted-foreground">Manage CV & Cover Letter Generator accounts and access</p>
         </div>
         <Button variant="outline" size="sm" onClick={fetchUsers} className="gap-2">
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -281,12 +283,13 @@ export default function UsersPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid gap-4 sm:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {[
           { label: "Total Users", value: stats.total, icon: Users, color: "text-blue-500", bg: "bg-blue-500/10" },
           { label: "Paid Users", value: stats.paid, icon: CheckCircle, color: "text-green-500", bg: "bg-green-500/10" },
           { label: "Awaiting Payment", value: stats.limited, icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
-          { label: "CVs Generated", value: stats.totalGens, icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10" },
+          { label: "CVs Generated", value: stats.totalCVs, icon: FileText, color: "text-purple-500", bg: "bg-purple-500/10" },
+          { label: "Cover Letters", value: stats.totalCLs, icon: FileText, color: "text-indigo-500", bg: "bg-indigo-500/10" },
         ].map((stat) => (
           <motion.div
             key={stat.label}
@@ -341,8 +344,11 @@ export default function UsersPage() {
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   <button onClick={() => toggleSort("generations_used")} className="flex items-center hover:text-foreground">
-                    Generated <SortIcon field="generations_used" />
+                    CV <SortIcon field="generations_used" />
                   </button>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Cover Letter
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -356,14 +362,14 @@ export default function UsersPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
                     <RefreshCw className="mx-auto mb-2 h-5 w-5 animate-spin" />
                     Loading users…
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-muted-foreground">
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
                     No users found
                   </td>
                 </tr>
@@ -395,7 +401,7 @@ export default function UsersPage() {
                         </button>
                       </td>
 
-                      {/* Generated */}
+                      {/* CV Generated */}
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
                           user.generations_used >= FREE_GENERATIONS
@@ -403,6 +409,17 @@ export default function UsersPage() {
                             : "bg-muted text-muted-foreground ring-border"
                         }`}>
                           {user.generations_used} / {user.is_paid ? "∞" : FREE_GENERATIONS}
+                        </span>
+                      </td>
+
+                      {/* Cover Letter Generated */}
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ${
+                          (user.cl_generations_used ?? 0) >= FREE_GENERATIONS
+                            ? "bg-amber-500/10 text-amber-600 ring-amber-500/20 dark:text-amber-400"
+                            : "bg-muted text-muted-foreground ring-border"
+                        }`}>
+                          {user.cl_generations_used ?? 0} / {user.is_paid ? "∞" : FREE_GENERATIONS}
                         </span>
                       </td>
 

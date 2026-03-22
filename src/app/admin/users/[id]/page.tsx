@@ -15,12 +15,14 @@ import {
   Eye,
   X,
   FileText,
+  FilePen,
   Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { FREE_GENERATIONS } from "@/lib/payment-config";
-import type { CVUser, CVGeneration, CVFormData } from "@/types/database";
+import type { CVUser, CVGeneration, CLGeneration, CVFormData } from "@/types/database";
+import type { CoverLetterFormData } from "@/lib/cover-letter-pdf";
 import { UserCVDocument } from "@/lib/cv-user-pdf";
 import { toast } from "sonner";
 
@@ -125,6 +127,7 @@ export default function UserDetailPage() {
 
   const [user, setUser] = useState<CVUser | null>(null);
   const [generations, setGenerations] = useState<CVGeneration[]>([]);
+  const [clGenerations, setClGenerations] = useState<CLGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [previewData, setPreviewData] = useState<{ data: CVFormData; label: string } | null>(null);
@@ -133,9 +136,10 @@ export default function UserDetailPage() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     const supabase = createClient();
-    const [{ data: userData, error: userErr }, { data: genData }] = await Promise.all([
+    const [{ data: userData, error: userErr }, { data: genData }, { data: clGenData }] = await Promise.all([
       supabase.from("cv_users").select("*").eq("id", id).single(),
       supabase.from("cv_generations").select("*").eq("user_id", id).order("generated_at", { ascending: false }),
+      supabase.from("cl_generations").select("*").eq("user_id", id).order("generated_at", { ascending: false }),
     ]);
     if (userErr) {
       toast.error("User not found");
@@ -144,6 +148,7 @@ export default function UserDetailPage() {
     }
     setUser(userData as unknown as CVUser);
     setGenerations((genData ?? []) as unknown as CVGeneration[]);
+    setClGenerations((clGenData ?? []) as unknown as CLGeneration[]);
     setLoading(false);
   }, [id, router]);
 
@@ -179,8 +184,26 @@ export default function UserDetailPage() {
     if (error) {
       toast.error("Reset failed: " + error.message);
     } else {
-      toast.success("Generations reset to 0");
+      toast.success("CV generations reset to 0");
       setUser((u) => u ? { ...u, generations_used: 0 } : u);
+    }
+    setUpdating(false);
+    setConfirmAction(null);
+  }
+
+  async function resetCLGenerations() {
+    if (!user) return;
+    setUpdating(true);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("cv_users")
+      .update({ cl_generations_used: 0, updated_at: new Date().toISOString() })
+      .eq("id", user.id);
+    if (error) {
+      toast.error("Reset failed: " + error.message);
+    } else {
+      toast.success("Cover letter generations reset to 0");
+      setUser((u) => u ? { ...u, cl_generations_used: 0 } : u);
     }
     setUpdating(false);
     setConfirmAction(null);
@@ -214,8 +237,10 @@ export default function UserDetailPage() {
 
   if (!user) return null;
 
-  const isLimited = user.generations_used >= FREE_GENERATIONS && !user.is_paid;
+  const clUsed = user.cl_generations_used ?? 0;
+  const isLimited = (user.generations_used >= FREE_GENERATIONS || clUsed >= FREE_GENERATIONS) && !user.is_paid;
   const remaining = Math.max(0, FREE_GENERATIONS - user.generations_used);
+  const clRemaining = Math.max(0, FREE_GENERATIONS - clUsed);
 
   return (
     <div className="space-y-6">
@@ -313,12 +338,14 @@ export default function UserDetailPage() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {[
-              { label: "CVs Generated", value: user.generations_used },
-              { label: "Free Limit", value: FREE_GENERATIONS },
-              { label: "Joined", value: new Date(user.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) },
-              { label: "Last Updated", value: new Date(user.updated_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }) },
+              { label: "CVs Generated", value: `${user.generations_used} / ${user.is_paid ? "∞" : FREE_GENERATIONS}`, icon: FileText, accent: user.generations_used >= FREE_GENERATIONS && !user.is_paid ? "text-amber-500" : "text-primary" },
+              { label: "Cover Letters", value: `${clUsed} / ${user.is_paid ? "∞" : FREE_GENERATIONS}`, icon: FilePen, accent: clUsed >= FREE_GENERATIONS && !user.is_paid ? "text-amber-500" : "text-primary" },
+              { label: "CV Remaining", value: user.is_paid ? "∞" : remaining, icon: null, accent: "text-foreground" },
+              { label: "CL Remaining", value: user.is_paid ? "∞" : clRemaining, icon: null, accent: "text-foreground" },
+              { label: "Joined", value: new Date(user.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }), icon: null, accent: "text-foreground" },
+              { label: "Last Updated", value: new Date(user.updated_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" }), icon: null, accent: "text-foreground" },
             ].map((s) => (
               <div key={s.label} className="rounded-xl border border-border bg-muted/20 p-3">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{s.label}</p>
@@ -364,12 +391,26 @@ export default function UserDetailPage() {
             disabled={updating || user.generations_used === 0}
             onClick={() =>
               setConfirmAction({
-                message: `Reset generations for ${user.email}? They will get ${FREE_GENERATIONS} free generations again.`,
+                message: `Reset CV generations for ${user.email}? They will get ${FREE_GENERATIONS} free CV generations again.`,
                 onConfirm: resetGenerations,
               })
             }
           >
-            <RotateCcw className="h-4 w-4" /> Reset Generations
+            <RotateCcw className="h-4 w-4" /> Reset CV Generations
+          </Button>
+
+          <Button
+            variant="outline"
+            className="w-full gap-2 justify-start"
+            disabled={updating || clUsed === 0}
+            onClick={() =>
+              setConfirmAction({
+                message: `Reset cover letter generations for ${user.email}? They will get ${FREE_GENERATIONS} free cover letter generations again.`,
+                onConfirm: resetCLGenerations,
+              })
+            }
+          >
+            <RotateCcw className="h-4 w-4" /> Reset CL Generations
           </Button>
 
           <Button
@@ -388,7 +429,7 @@ export default function UserDetailPage() {
         </div>
       </div>
 
-      {/* Generation history */}
+      {/* CV Generation history */}
       <div className="rounded-2xl border border-border bg-card">
         <div className="border-b border-border px-5 py-4">
           <h2 className="font-semibold">CV Generation History</h2>
@@ -446,6 +487,57 @@ export default function UserDetailPage() {
                       <Eye className="h-3.5 w-3.5" />
                       Preview
                     </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Cover Letter history */}
+      <div className="rounded-2xl border border-border bg-card">
+        <div className="border-b border-border px-5 py-4">
+          <h2 className="font-semibold">Cover Letter History</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {clGenerations.length} cover letter{clGenerations.length !== 1 ? "s" : ""} generated
+          </p>
+        </div>
+
+        {clGenerations.length === 0 ? (
+          <div className="py-12 text-center text-sm text-muted-foreground">
+            No cover letters generated yet
+          </div>
+        ) : (
+          <div className="divide-y divide-border">
+            {clGenerations.map((gen, i) => {
+              const clData = gen.cl_data as CoverLetterFormData;
+              const name = clData?.personal?.fullName || user.full_name || user.email;
+              const company = clData?.recipient?.company || "—";
+              const position = clData?.jobDetails?.position || "—";
+              return (
+                <div
+                  key={gen.id}
+                  className="flex items-center justify-between px-5 py-4 hover:bg-muted/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-xs font-bold text-indigo-500">
+                      #{clGenerations.length - i}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{name} → {company}</p>
+                      <p className="text-xs text-muted-foreground">{position}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {new Date(gen.generated_at).toLocaleString("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </div>
                 </div>
               );

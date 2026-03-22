@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,12 +15,20 @@ import {
   Monitor,
   Info,
   FilePen,
+  CreditCard,
+  AlertCircle,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserCoverLetterDocument } from "@/lib/cover-letter-pdf";
 import type { CoverLetterFormData } from "@/lib/cover-letter-pdf";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase/client";
+import { FREE_GENERATIONS, PAYMENT_CONFIG } from "@/lib/payment-config";
+import type { CVUser } from "@/types/database";
 
 // PDFViewer uses browser APIs — must be dynamically imported with ssr:false
 const PDFViewer = dynamic(
@@ -260,6 +268,77 @@ function PreviewDrawer({
   );
 }
 
+// ── Payment Modal ─────────────────────────────────────────────────────────────
+
+function PaymentModal({ onClose }: { onClose: () => void }) {
+  const [copied, setCopied] = useState<string | null>(null);
+
+  function copy(text: string, key: string) {
+    navigator.clipboard.writeText(text);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="relative w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl"
+      >
+        <button onClick={onClose} className="absolute right-4 top-4 rounded-lg p-1 text-muted-foreground hover:bg-muted">
+          <X className="h-4 w-4" />
+        </button>
+        <div className="p-6">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10">
+              <CreditCard className="h-5 w-5 text-amber-500" />
+            </div>
+            <div>
+              <h3 className="font-bold">Unlock Unlimited Cover Letters</h3>
+              <p className="text-xs text-muted-foreground">One-time payment of Rs. {PAYMENT_CONFIG.amount}</p>
+            </div>
+          </div>
+          <div className="mb-5 flex items-start gap-2 rounded-xl bg-amber-500/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>You&apos;ve used your {FREE_GENERATIONS} free cover letter generations. Make a one-time bank transfer of <strong>Rs. {PAYMENT_CONFIG.amount}</strong> to unlock unlimited access.</span>
+          </div>
+          <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4 text-sm">
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bank Transfer Details</h4>
+            {[
+              { label: "Bank", value: PAYMENT_CONFIG.bankName },
+              { label: "Account Name", value: PAYMENT_CONFIG.accountName },
+              { label: "Account Number", value: PAYMENT_CONFIG.accountNumber },
+              { label: "Branch", value: PAYMENT_CONFIG.branch },
+              { label: "Amount", value: `Rs. ${PAYMENT_CONFIG.amount}` },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">{label}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium">{value}</span>
+                  <button onClick={() => copy(value, label)} className="rounded p-0.5 text-muted-foreground hover:text-foreground">
+                    {copied === label ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            After payment, send your receipt to{" "}
+            <a href={`https://wa.me/${PAYMENT_CONFIG.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+              <MessageCircle className="h-3 w-3" /> WhatsApp
+            </a>{" "}
+            or{" "}
+            <a href={`mailto:${PAYMENT_CONFIG.email}`} className="text-primary hover:underline">{PAYMENT_CONFIG.email}</a>{" "}
+            to activate unlimited access.
+          </p>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export function CoverLetterClient() {
@@ -267,6 +346,18 @@ export function CoverLetterClient() {
   const [showSample, setShowSample] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [cvUser, setCvUser] = useState<CVUser | null>(null);
+
+  // Load user's cover letter generation count on mount
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data } = await supabase.from("cv_users").select("*").eq("id", user.id).single();
+      if (data) setCvUser(data as CVUser);
+    });
+  }, []);
 
   // ── Field updaters ──────────────────────────────────────────────────────────
 
@@ -321,13 +412,14 @@ export function CoverLetterClient() {
       if (res.status === 401) {
         toast.error("Login required", {
           description: "Please log in to download your cover letter.",
-          action: {
-            label: "Log in",
-            onClick: () =>
-              (window.location.href = "/auth/login?from=/cover-letter"),
-          },
+          action: { label: "Log in", onClick: () => (window.location.href = "/auth/login?from=/cover-letter") },
           duration: 6000,
         });
+        return;
+      }
+
+      if (res.status === 402) {
+        setShowPayment(true);
         return;
       }
 
@@ -349,7 +441,10 @@ export function CoverLetterClient() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success("Cover letter downloaded!");
+      const newCount = parseInt(res.headers.get("X-CL-Generations-Used") ?? "1");
+      const isPaid = cvUser?.is_paid ?? false;
+      setCvUser((u) => u ? { ...u, cl_generations_used: newCount } : u);
+      toast.success(`Cover letter downloaded! (${newCount}/${isPaid ? "∞" : FREE_GENERATIONS} used)`);
     } catch {
       toast.error("Network error. Please try again.");
     } finally {
@@ -361,8 +456,18 @@ export function CoverLetterClient() {
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
+  const clUsed = cvUser?.cl_generations_used ?? 0;
+  const isPaid = cvUser?.is_paid ?? false;
+  const clRemaining = Math.max(0, FREE_GENERATIONS - clUsed);
+  const isLimited = clUsed >= FREE_GENERATIONS && !isPaid;
+
   return (
     <div className="min-h-screen bg-background pt-20">
+      {/* Payment modal */}
+      <AnimatePresence>
+        {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
+      </AnimatePresence>
+
       {/* Preview drawer */}
       <AnimatePresence>
         {showPreview && (
@@ -382,6 +487,22 @@ export function CoverLetterClient() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Write a professional cover letter and download it as a polished PDF.
               </p>
+              {/* Generation counter */}
+              {cvUser && (
+                <button
+                  onClick={() => isLimited && setShowPayment(true)}
+                  className={`mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 transition-colors ${
+                    isPaid
+                      ? "bg-green-500/10 text-green-600 ring-green-500/20"
+                      : isLimited
+                        ? "bg-red-500/10 text-red-600 ring-red-500/20 cursor-pointer hover:bg-red-500/20"
+                        : "bg-primary/10 text-primary ring-primary/20"
+                  }`}
+                >
+                  <FileText className="h-3 w-3" />
+                  {isPaid ? "Unlimited access" : isLimited ? "Limit reached — click to unlock" : `${clRemaining} free ${clRemaining === 1 ? "generation" : "generations"} left`}
+                </button>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-3">

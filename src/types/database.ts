@@ -510,6 +510,7 @@ export interface Database {
           email: string;
           full_name: string | null;
           generations_used: number;
+          cl_generations_used: number;
           is_paid: boolean;
           payment_reference: string | null;
           paid_at: string | null;
@@ -522,6 +523,7 @@ export interface Database {
           email: string;
           full_name?: string | null;
           generations_used?: number;
+          cl_generations_used?: number;
           is_paid?: boolean;
           payment_reference?: string | null;
           paid_at?: string | null;
@@ -534,6 +536,7 @@ export interface Database {
           email?: string;
           full_name?: string | null;
           generations_used?: number;
+          cl_generations_used?: number;
           is_paid?: boolean;
           payment_reference?: string | null;
           paid_at?: string | null;
@@ -560,6 +563,27 @@ export interface Database {
           id?: string;
           user_id?: string;
           cv_data?: Record<string, unknown>;
+          generated_at?: string;
+        };
+        Relationships: [];
+      };
+      cl_generations: {
+        Row: {
+          id: string;
+          user_id: string;
+          cl_data: Record<string, unknown>;
+          generated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          cl_data: Record<string, unknown>;
+          generated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cl_data?: Record<string, unknown>;
           generated_at?: string;
         };
         Relationships: [];
@@ -601,6 +625,7 @@ export interface CVUser {
   email: string;
   full_name: string | null;
   generations_used: number;
+  cl_generations_used: number;
   is_paid: boolean;
   payment_reference: string | null;
   paid_at: string | null;
@@ -613,6 +638,13 @@ export interface CVGeneration {
   id: string;
   user_id: string;
   cv_data: CVFormData;
+  generated_at: string;
+}
+
+export interface CLGeneration {
+  id: string;
+  user_id: string;
+  cl_data: import("@/lib/cover-letter-pdf").CoverLetterFormData;
   generated_at: string;
 }
 
