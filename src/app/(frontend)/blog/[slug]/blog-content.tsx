@@ -11,7 +11,7 @@ const MDPreview = dynamic(
 
 export function BlogContent({ content }: { content: string }) {
   return (
-    <div data-color-mode="auto" className="wmde-markdown-var">
+    <div data-color-mode="auto" className="wmde-markdown-var [&_.wmde-markdown]:bg-transparent [&_.wmde-markdown]:text-foreground [&_.w-md-editor-preview]:bg-transparent">
       <MDPreview source={content} />
     </div>
   );
