@@ -202,7 +202,7 @@ export function CVGeneratorPromo() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-500" />
               </span>
-              Free to use — start building now
+              Sign up free — start building now
             </motion.div>
           </motion.div>
 
