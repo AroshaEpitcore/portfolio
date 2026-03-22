@@ -29,11 +29,14 @@ export default function CVUsersPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/cv-users");
-      if (!res.ok) throw new Error(await res.text());
-      const data: CVUser[] = await res.json();
-      setUsers(data);
-    } catch {
-      toast.error("Failed to load users");
+      const body = await res.json();
+      if (!res.ok) {
+        toast.error("Failed to load users: " + (body?.error ?? res.status));
+      } else {
+        setUsers(body);
+      }
+    } catch (err) {
+      toast.error("Failed to load users: " + String(err));
     } finally {
       setLoading(false);
     }

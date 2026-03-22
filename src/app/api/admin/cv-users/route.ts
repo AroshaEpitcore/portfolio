@@ -5,6 +5,10 @@ export const dynamic = "force-dynamic";
 
 // GET — fetch all cv_users (bypasses RLS via service role)
 export async function GET() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: "SUPABASE_SERVICE_ROLE_KEY not configured" }, { status: 500 });
+  }
+
   try {
     const supabase = await createServiceClient();
     const { data, error } = await supabase
@@ -13,13 +17,14 @@ export async function GET() {
       .order("created_at", { ascending: false });
 
     if (error) {
+      console.error("[admin/cv-users GET] DB error:", error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json(data ?? []);
   } catch (err) {
     console.error("[admin/cv-users GET]", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
 
