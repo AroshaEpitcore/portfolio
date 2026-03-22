@@ -501,6 +501,63 @@ export interface Database {
         };
         Relationships: [];
       };
+      cv_users: {
+        Row: {
+          id: string;
+          email: string;
+          full_name: string | null;
+          generations_used: number;
+          is_paid: boolean;
+          payment_reference: string | null;
+          paid_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email: string;
+          full_name?: string | null;
+          generations_used?: number;
+          is_paid?: boolean;
+          payment_reference?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          full_name?: string | null;
+          generations_used?: number;
+          is_paid?: boolean;
+          payment_reference?: string | null;
+          paid_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      cv_generations: {
+        Row: {
+          id: string;
+          user_id: string;
+          cv_data: Record<string, unknown>;
+          generated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          cv_data: Record<string, unknown>;
+          generated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          cv_data?: Record<string, unknown>;
+          generated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -530,3 +587,76 @@ export type Testimonial = Database["public"]["Tables"]["testimonials"]["Row"];
 export type BlogPost = Database["public"]["Tables"]["blog_posts"]["Row"];
 export type Achievement = Database["public"]["Tables"]["achievements"]["Row"];
 export type TeamMember = Database["public"]["Tables"]["team_members"]["Row"];
+
+// ── CV Generator types ─────────────────────────────────────────────────────
+
+export interface CVUser {
+  id: string;
+  email: string;
+  full_name: string | null;
+  generations_used: number;
+  is_paid: boolean;
+  payment_reference: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CVGeneration {
+  id: string;
+  user_id: string;
+  cv_data: CVFormData;
+  generated_at: string;
+}
+
+export interface CVFormData {
+  personal: {
+    fullName: string;
+    jobTitle: string;
+    email: string;
+    phone: string;
+    location: string;
+    linkedin: string;
+    github: string;
+    website: string;
+  };
+  summary: string;
+  experience: Array<{
+    id: string;
+    company: string;
+    position: string;
+    startDate: string;
+    endDate: string;
+    isCurrent: boolean;
+    description: string;
+  }>;
+  education: Array<{
+    id: string;
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    startDate: string;
+    endDate: string;
+    isCurrent: boolean;
+    grade: string;
+  }>;
+  skills: Array<{
+    id: string;
+    category: string;
+    items: string;
+  }>;
+  projects: Array<{
+    id: string;
+    name: string;
+    description: string;
+    techStack: string;
+    url: string;
+  }>;
+  certifications: Array<{
+    id: string;
+    name: string;
+    issuer: string;
+    date: string;
+    url: string;
+  }>;
+}

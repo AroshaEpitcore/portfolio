@@ -4,10 +4,28 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Home, User, FolderKanban, Mail, Github, Linkedin, MessageCircle, ConciergeBell, BookOpen, GitBranch } from "lucide-react";
+import {
+  Menu,
+  X,
+  Home,
+  User,
+  FolderKanban,
+  Mail,
+  Github,
+  Linkedin,
+  MessageCircle,
+  ConciergeBell,
+  BookOpen,
+  GitBranch,
+  FileText,
+  LogOut,
+  ChevronDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./theme-toggle";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
@@ -17,11 +35,16 @@ const navItems = [
   { name: "Services", href: "/services", icon: ConciergeBell },
   { name: "Blog", href: "/blog", icon: BookOpen },
   { name: "Contact", href: "/contact", icon: Mail },
+  { name: "CV Generator", href: "/cv-generator", icon: FileText },
 ];
 
 const socialLinks = [
   { icon: Github, href: "https://github.com/AroshaRavishan", label: "GitHub" },
-  { icon: Linkedin, href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/", label: "LinkedIn" },
+  {
+    icon: Linkedin,
+    href: "https://www.linkedin.com/in/arosha-ravishan-89b459247/",
+    label: "LinkedIn",
+  },
   { icon: MessageCircle, href: "https://wa.me/94762946381", label: "WhatsApp" },
 ];
 
@@ -29,6 +52,9 @@ export function Navbar() {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [authUser, setAuthUser] = useState<SupabaseUser | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +67,52 @@ export function Navbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  // Close user menu on outside click
+  useEffect(() => {
+    if (!showUserMenu) return;
+    function handleClick() {
+      setShowUserMenu(false);
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [showUserMenu]);
+
+  // Check Supabase auth state
+  useEffect(() => {
+    const supabase = createClient();
+
+    supabase.auth.getUser().then(({ data }) => {
+      setAuthUser(data.user ?? null);
+      setAuthLoaded(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthUser(session?.user ?? null);
+      setAuthLoaded(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setAuthUser(null);
+    setShowUserMenu(false);
+  }
+
+  const userInitial = authUser
+    ? (
+        authUser.user_metadata?.full_name ||
+        authUser.email ||
+        "U"
+      )
+        .charAt(0)
+        .toUpperCase()
+    : "";
 
   return (
     <>
@@ -97,7 +169,7 @@ export function Navbar() {
             ))}
           </div>
 
-          {/* Social Icons & Theme Toggle - Right */}
+          {/* Social Icons, Theme Toggle & Auth - Right */}
           <div className="hidden items-center space-x-3 md:flex">
             {socialLinks.map((social, index) => {
               const Icon = social.icon;
@@ -120,6 +192,78 @@ export function Navbar() {
             })}
             <div className="mx-2 h-6 w-px bg-border" />
             <ThemeToggle />
+
+            {/* Auth section */}
+            {authLoaded && (
+              <>
+                {authUser ? (
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowUserMenu((v) => !v);
+                      }}
+                      className="flex items-center gap-1.5 rounded-full border border-border bg-card/50 pl-1 pr-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary"
+                    >
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                        {userInitial}
+                      </span>
+                      <span className="max-w-[80px] truncate text-muted-foreground">
+                        {authUser.user_metadata?.full_name ||
+                          authUser.email?.split("@")[0]}
+                      </span>
+                      <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                    </button>
+
+                    <AnimatePresence>
+                      {showUserMenu && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-10 z-50 min-w-[180px] rounded-xl border border-border bg-card p-2 shadow-xl"
+                        >
+                          <div className="mb-2 border-b border-border pb-2 px-2">
+                            <p className="text-xs font-medium truncate">
+                              {authUser.user_metadata?.full_name || "User"}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground truncate">
+                              {authUser.email}
+                            </p>
+                          </div>
+                          <Link
+                            href="/cv-generator"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            CV Generator
+                          </Link>
+                          <button
+                            onClick={handleLogout}
+                            className="mt-1 flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs text-red-500 transition-colors hover:bg-red-500/10"
+                          >
+                            <LogOut className="h-3.5 w-3.5" />
+                            Sign Out
+                          </button>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <Link href="/auth/login">
+                    <Button
+                      size="sm"
+                      className="gap-1.5 bg-gradient-to-r from-primary to-accent text-white text-xs hover:opacity-90"
+                    >
+                      <User className="h-3.5 w-3.5" />
+                      Login
+                    </Button>
+                  </Link>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -175,6 +319,41 @@ export function Navbar() {
                   </motion.div>
                 );
               })}
+
+              {/* Mobile Auth */}
+              {authLoaded && (
+                <div className="mt-2 border-t border-border pt-3">
+                  {authUser ? (
+                    <div className="px-4 py-2">
+                      <p className="mb-1 text-xs text-muted-foreground">
+                        Signed in as{" "}
+                        <span className="font-medium text-foreground">
+                          {authUser.email}
+                        </span>
+                      </p>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-red-500 transition-colors hover:bg-red-500/10"
+                      >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="px-4 py-2">
+                      <Link href="/auth/login">
+                        <Button
+                          size="sm"
+                          className="w-full gap-1.5 bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
+                        >
+                          <User className="h-4 w-4" />
+                          Login / Sign Up
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Mobile Social Links */}
               <div className="mt-4 flex items-center justify-center gap-4 border-t border-border pt-4">

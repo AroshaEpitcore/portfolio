@@ -21,6 +21,7 @@ import {
   BookOpen,
   Trophy,
   Users,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,11 @@ const navItems = [
     name: "Team Members",
     href: "/admin/team",
     icon: Users,
+  },
+  {
+    name: "CV Users",
+    href: "/admin/cv-users",
+    icon: FileText,
   },
   {
     name: "Social Links",

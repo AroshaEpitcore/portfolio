@@ -19,6 +19,7 @@ import { StatCounter } from "@/components/ui/stat-counter";
 import { ExperienceTimeline } from "@/components/sections/experience-timeline";
 import { formatDateRange } from "@/lib/utils";
 import type { Profile, Experience, Skill, Education } from "@/types/database";
+import { DownloadCVButton } from "@/components/shared/download-cv-button";
 
 interface AboutPageProps {
   profile?: Profile;
@@ -117,14 +118,17 @@ export function AboutPage({ profile, experiences, skills, education }: AboutPage
                   <StatCounter value="100%" label="Satisfaction" />
                 </div>
 
-                {profile.resume_url && (
-                  <a href={profile.resume_url} target="_blank" rel="noopener noreferrer">
-                    <Button className="gap-2 bg-gradient-to-r from-primary to-accent text-white shadow-md shadow-primary/20 hover:opacity-90">
-                      <Download className="h-4 w-4" />
-                      Download Resume
-                    </Button>
-                  </a>
-                )}
+                <div className="flex flex-wrap gap-3">
+                  {profile.resume_url && (
+                    <a href={profile.resume_url} target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" className="gap-2">
+                        <Download className="h-4 w-4" />
+                        Resume
+                      </Button>
+                    </a>
+                  )}
+                  <DownloadCVButton />
+                </div>
               </div>
             </div>
           </motion.div>

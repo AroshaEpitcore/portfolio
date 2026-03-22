@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Code2, Palette, Zap, Sparkles, Rocket, Coffee } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DownloadCVButton } from "@/components/shared/download-cv-button";
 
 interface AboutPreviewProps {
   name?: string;
@@ -51,10 +52,7 @@ export function AboutPreview({
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
 
   return (
-    <section
-      ref={containerRef}
-      className="relative overflow-hidden py-32"
-    >
+    <section ref={containerRef} className="relative overflow-hidden py-32">
       {/* Background */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/30 to-background" />
@@ -100,7 +98,7 @@ export function AboutPreview({
 
         {/* Main Content Grid */}
         <div className="grid gap-16 lg:grid-cols-2 lg:gap-20">
-          {/* Left: About content with image */}
+          {/* Left: About content */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -112,12 +110,7 @@ export function AboutPreview({
               <motion.div
                 initial={{ scale: 0, rotate: -180 }}
                 animate={isInView ? { scale: 1, rotate: 0 } : {}}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 20,
-                  delay: 0.4
-                }}
+                transition={{ type: "spring", stiffness: 200, damping: 20, delay: 0.4 }}
                 className="relative flex-shrink-0"
               >
                 {avatarUrl ? (
@@ -139,7 +132,6 @@ export function AboutPreview({
                     </div>
                   </div>
                 )}
-                {/* Online indicator */}
                 <span className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-4 border-background bg-green-500">
                   <span className="absolute h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
                 </span>
@@ -151,7 +143,7 @@ export function AboutPreview({
               </div>
             </div>
 
-            {/* Bio with animated border */}
+            {/* Bio */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -159,9 +151,7 @@ export function AboutPreview({
               className="group relative mb-8 rounded-2xl border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-500 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
             >
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <p className="relative text-md leading-relaxed text-muted-foreground">
-                {shortBio}
-              </p>
+              <p className="relative text-md leading-relaxed text-muted-foreground">{shortBio}</p>
             </motion.div>
 
             {/* Stats */}
@@ -193,11 +183,12 @@ export function AboutPreview({
               })}
             </motion.div>
 
-            {/* CTA Button */}
+            {/* CTA Buttons */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.8 }}
+              className="flex flex-wrap gap-3"
             >
               <Link href="/about">
                 <Button
@@ -211,28 +202,25 @@ export function AboutPreview({
                   <div className="absolute inset-0 -z-10 translate-y-full bg-gradient-to-r from-primary/10 to-accent/10 transition-transform duration-300 group-hover:translate-y-0" />
                 </Button>
               </Link>
+              <DownloadCVButton />
             </motion.div>
           </motion.div>
 
           {/* Right: Feature cards */}
           <div className="space-y-6">
-            {features.map((feature, index) => {
+            {features.map((feature) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.title}
                   className="feature-card group relative overflow-hidden rounded-2xl border border-border bg-card/50 p-6 backdrop-blur-sm transition-all duration-500 hover:border-transparent hover:shadow-xl"
                 >
-                  {/* Gradient background on hover */}
                   <div className={`absolute inset-0 bg-gradient-to-r ${feature.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-5`} />
-
-                  {/* Animated border */}
                   <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.gradient} opacity-0 transition-opacity duration-500 group-hover:opacity-100`} style={{ padding: "1px" }}>
                     <div className="h-full w-full rounded-2xl bg-card" />
                   </div>
 
                   <div className="relative flex items-start gap-5">
-                    {/* Icon with gradient background */}
                     <motion.div
                       whileHover={{ scale: 1.1, rotate: 5 }}
                       transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -245,13 +233,10 @@ export function AboutPreview({
                       <h4 className="mb-2 text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
                         {feature.title}
                       </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {feature.description}
-                      </p>
+                      <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                     </div>
 
-                    {/* Arrow indicator */}
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 translate-x-4">
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 translate-x-4 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
                       <ArrowRight className={`h-5 w-5 bg-gradient-to-r ${feature.gradient} bg-clip-text text-transparent`} />
                     </div>
                   </div>
