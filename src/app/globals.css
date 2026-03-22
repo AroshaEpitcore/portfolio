@@ -468,3 +468,9 @@ html {
   animation: gradient-x 3s ease infinite;
   background-size: 200% 200%;
 }
+
+/* ── Blog content: override wmde-markdown library defaults ── */
+.blog-content .wmde-markdown {
+  background-color: transparent !important;
+  color: inherit;
+}
