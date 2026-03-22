@@ -51,8 +51,8 @@ const features = [
 ];
 
 const highlights = [
-  "No account required to start",
-  "3 free generations included",
+  "Free account required to get started",
+  "2 free generations included",
   "Works on any device",
   "Real-time PDF preview",
   "Multiple font & color options",
@@ -86,7 +86,7 @@ export function CVGeneratorPromo() {
             className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-sm text-primary"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            Free Tool — No Sign-up to Start
+            Free Tool — Sign up &amp; Start Building
           </motion.div>
 
           <motion.h2
@@ -188,7 +188,7 @@ export function CVGeneratorPromo() {
 
                 {/* Fine print */}
                 <p className="mt-3 text-center text-[11px] text-muted-foreground">
-                  3 free generations · Unlock unlimited for Rs. 250
+                  2 free generations · Unlock unlimited for Rs. 250
                 </p>
               </div>
             </div>
