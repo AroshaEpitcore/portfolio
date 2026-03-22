@@ -28,8 +28,6 @@ import {
   RefreshCw,
   AlignLeft,
   AlignCenter,
-  ChevronUp,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -116,17 +114,6 @@ const DEFAULT_SECTION_ORDER = [
   "education", "skills", "certifications", "languages",
 ];
 
-const SECTION_LABELS: Record<string, string> = {
-  experience: "Work Experience",
-  projects: "Projects",
-  volunteer: "Volunteer",
-  customSections: "Custom Sections",
-  references: "References",
-  education: "Education",
-  skills: "Skills",
-  certifications: "Certifications",
-  languages: "Languages",
-};
 
 const COLOR_OPTIONS: { color: string; label: string }[] = [
   { color: "#6366f1", label: "Indigo"   },
@@ -1903,44 +1890,6 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
               </div>
             </div>
 
-            {/* Section order */}
-            <div className="mb-5">
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Section Order
-              </p>
-              <p className="mb-2 text-[9px] text-muted-foreground">Reorder sections in your PDF</p>
-              <div className="space-y-1">
-                {(data.styles.sectionOrder ?? DEFAULT_SECTION_ORDER).map((key, idx, arr) => (
-                  <div key={key} className="flex items-center gap-1 rounded-lg border border-border/60 bg-background px-2 py-1.5">
-                    <span className="flex-1 text-xs text-foreground truncate">{SECTION_LABELS[key] ?? key}</span>
-                    <button
-                      type="button"
-                      disabled={idx === 0}
-                      onClick={() => {
-                        const next = [...arr];
-                        [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-                        setStyle("sectionOrder", next);
-                      }}
-                      className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
-                    >
-                      <ChevronUp className="h-3 w-3" />
-                    </button>
-                    <button
-                      type="button"
-                      disabled={idx === arr.length - 1}
-                      onClick={() => {
-                        const next = [...arr];
-                        [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
-                        setStyle("sectionOrder", next);
-                      }}
-                      className="rounded p-0.5 text-muted-foreground hover:bg-muted disabled:opacity-30"
-                    >
-                      <ChevronDown className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* Mini preview */}
             <div className="mt-5 rounded-lg border border-border/60 bg-background p-3">
