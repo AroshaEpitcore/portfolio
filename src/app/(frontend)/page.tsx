@@ -4,6 +4,7 @@ import { FeaturedProjects } from "@/components/sections/featured-projects";
 import { SkillsSection } from "@/components/sections/skills-section";
 import { TestimonialsSection } from "@/components/sections/testimonials-section";
 import { ContactCTA } from "@/components/sections/contact-cta";
+import { CVGeneratorPromo } from "@/components/sections/cv-generator-promo";
 import { GitHubReposSection } from "@/components/sections/github-repos";
 import { AchievementsSection } from "@/components/sections/achievements-section";
 import { TeamSection } from "@/components/sections/team-section";
@@ -87,6 +88,7 @@ export default async function HomePage() {
       <AchievementsSection achievements={achievements || undefined} />
       <TeamSection members={team || undefined} />
       <TestimonialsSection testimonials={testimonials || undefined} />
+      <CVGeneratorPromo />
       <ContactCTA
         email={contact?.email || undefined}
         availability={contact?.availability || undefined}
