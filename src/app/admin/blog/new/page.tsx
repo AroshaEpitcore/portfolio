@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { MarkdownEditor } from "@/components/admin/markdown-editor";
 import { createClient } from "@/lib/supabase/client";
 
 const schema = z.object({
@@ -36,10 +37,11 @@ export default function NewBlogPostPage() {
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema) as Resolver<FormData>,
-    defaultValues: { read_time: 5, is_featured: false, is_published: false, tags: "" },
+    defaultValues: { read_time: 5, is_featured: false, is_published: false, tags: "", content: "" },
   });
 
   const titleValue = watch("title");
+  const contentValue = watch("content") ?? "";
 
   const handleTitleBlur = () => {
     if (titleValue) {
@@ -152,10 +154,14 @@ export default function NewBlogPostPage() {
         {/* Content */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
-            <CardHeader><CardTitle className="text-base">Content (Markdown supported)</CardTitle></CardHeader>
-            <CardContent>
-              <Textarea placeholder={`# Heading\n\nYour article content here...\n\n## Section\n\nMore content...`}
-                rows={16} className="font-mono text-sm" {...register("content")} />
+            <CardHeader><CardTitle className="text-base">Content</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <MarkdownEditor
+                value={contentValue}
+                onChange={(v) => setValue("content", v, { shouldDirty: true })}
+                placeholder={`# Heading\n\nYour article content here...\n\n## Section\n\nMore content...`}
+                minHeight={520}
+              />
             </CardContent>
           </Card>
         </motion.div>

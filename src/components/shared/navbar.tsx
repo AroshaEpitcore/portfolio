@@ -16,6 +16,7 @@ import {
   MessageCircle,
   BookOpen,
   FileText,
+  FilePen,
   LogOut,
   ChevronDown,
 } from "lucide-react";
@@ -31,6 +32,7 @@ const navItems = [
   { name: "Blog", href: "/blog", icon: BookOpen },
   { name: "Contact", href: "/contact", icon: Mail },
   { name: "CV Generator", href: "/cv-generator", icon: FileText },
+  { name: "Cover Letter", href: "/cover-letter", icon: FilePen },
 ];
 
 const socialLinks = [

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { MarkdownEditor } from "@/components/admin/markdown-editor";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPost } from "@/types/database";
 
@@ -38,9 +39,11 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
   const [post, setPost] = useState<BlogPost | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema) as Resolver<FormData>,
   });
+
+  const contentValue = watch("content") ?? "";
 
   useEffect(() => { fetchPost(); }, [id]);
 
@@ -185,10 +188,14 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
         {/* Content */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card>
-            <CardHeader><CardTitle className="text-base">Content (Markdown supported)</CardTitle></CardHeader>
-            <CardContent>
-              <Textarea placeholder={`# Heading\n\nYour article content here...`}
-                rows={16} className="font-mono text-sm" {...register("content")} />
+            <CardHeader><CardTitle className="text-base">Content</CardTitle></CardHeader>
+            <CardContent className="p-0">
+              <MarkdownEditor
+                value={contentValue}
+                onChange={(v) => setValue("content", v, { shouldDirty: true })}
+                placeholder={`# Heading\n\nYour article content here...`}
+                minHeight={520}
+              />
             </CardContent>
           </Card>
         </motion.div>
