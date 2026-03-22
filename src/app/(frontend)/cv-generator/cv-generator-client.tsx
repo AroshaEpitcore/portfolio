@@ -27,7 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PAYMENT_CONFIG, FREE_GENERATIONS } from "@/lib/payment-config";
-import type { CVFormData, CVUser } from "@/types/database";
+import type { CVFormData, CVStyles, CVUser } from "@/types/database";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,26 @@ function emptyCert() {
   return { id: uid(), name: "", issuer: "", date: "", url: "" };
 }
 
+// ── Style options ─────────────────────────────────────────────────────────────
+
+const FONT_OPTIONS: { key: CVStyles["fontFamily"]; label: string; sub: string; stack: string }[] = [
+  { key: "helvetica", label: "Modern",   sub: "Sans-Serif",  stack: "system-ui, sans-serif" },
+  { key: "times",     label: "Classic",  sub: "Serif",       stack: "Georgia, serif" },
+  { key: "courier",   label: "Technical",sub: "Monospace",   stack: "ui-monospace, monospace" },
+];
+
+const COLOR_OPTIONS: { color: string; label: string }[] = [
+  { color: "#6366f1", label: "Indigo"   },
+  { color: "#2563eb", label: "Blue"     },
+  { color: "#059669", label: "Emerald"  },
+  { color: "#dc2626", label: "Red"      },
+  { color: "#7c3aed", label: "Violet"   },
+  { color: "#b45309", label: "Amber"    },
+  { color: "#0f172a", label: "Charcoal" },
+];
+
 const defaultData: CVFormData = {
+  styles: { fontFamily: "helvetica", accentColor: "#6366f1" },
   personal: {
     fullName: "",
     jobTitle: "",
@@ -88,6 +107,7 @@ const defaultData: CVFormData = {
 };
 
 const sampleData: CVFormData = {
+  styles: { fontFamily: "helvetica", accentColor: "#6366f1" },
   personal: {
     fullName: "Sarah Johnson",
     jobTitle: "Full Stack Developer",
@@ -615,6 +635,78 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
 
       {/* Form */}
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
+
+        {/* ── CV Style ── */}
+        {!showSample && (
+          <Card>
+            <SectionHeader icon={FileText} label="CV Style" />
+            <div className="space-y-5">
+              {/* Font family */}
+              <div>
+                <FieldLabel>Font Family</FieldLabel>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {FONT_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => setData((d) => ({ ...d, styles: { ...d.styles, fontFamily: opt.key } }))}
+                      className={`flex flex-col items-start rounded-xl border-2 px-5 py-3 transition-all ${
+                        data.styles.fontFamily === opt.key
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border hover:border-primary/40"
+                      }`}
+                    >
+                      <span className="text-base font-semibold" style={{ fontFamily: opt.stack }}>
+                        {opt.label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{opt.sub}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Accent color */}
+              <div>
+                <FieldLabel>Accent Color</FieldLabel>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {COLOR_OPTIONS.map((c) => (
+                    <button
+                      key={c.color}
+                      type="button"
+                      title={c.label}
+                      onClick={() => setData((d) => ({ ...d, styles: { ...d.styles, accentColor: c.color } }))}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full ring-offset-2 transition-all ${
+                        data.styles.accentColor === c.color ? "ring-2 ring-offset-background" : "hover:scale-110"
+                      }`}
+                      style={{
+                        backgroundColor: c.color,
+                        outline: data.styles.accentColor === c.color ? `2px solid ${c.color}` : "none",
+                        outlineOffset: "3px",
+                      }}
+                    >
+                      {data.styles.accentColor === c.color && (
+                        <svg viewBox="0 0 20 20" fill="white" className="h-4 w-4">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </button>
+                  ))}
+                </div>
+                {/* Live preview strip */}
+                <div className="mt-4 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/20 px-4 py-3">
+                  <div className="h-5 w-1.5 rounded-full" style={{ backgroundColor: data.styles.accentColor }} />
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: data.styles.accentColor }}>
+                      {COLOR_OPTIONS.find((c) => c.color === data.styles.accentColor)?.label ?? "Custom"} · {FONT_OPTIONS.find((f) => f.key === data.styles.fontFamily)?.label} Font
+                    </p>
+                    <p className="text-xs text-muted-foreground">This accent color and font will appear in your CV headings, section labels, and highlights.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* ── Personal Info ── */}
         <Card>
           <SectionHeader icon={User} label="Personal Information" />

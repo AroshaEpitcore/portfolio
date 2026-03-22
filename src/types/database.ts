@@ -609,7 +609,13 @@ export interface CVGeneration {
   generated_at: string;
 }
 
+export interface CVStyles {
+  fontFamily: "helvetica" | "times" | "courier";
+  accentColor: string;
+}
+
 export interface CVFormData {
+  styles: CVStyles;
   personal: {
     fullName: string;
     jobTitle: string;
