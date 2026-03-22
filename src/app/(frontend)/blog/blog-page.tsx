@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Clock, Search, BookOpen, CalendarDays } from "lucide-react";
 import { PageHero } from "@/components/sections/page-hero";
 import { Input } from "@/components/ui/input";
+import { ShareButtons } from "@/components/blog/share-buttons";
 import type { BlogPost } from "@/types/database";
 
 interface BlogPageProps {
@@ -140,13 +141,18 @@ function PostCard({ post, index, featured = false }: { post: BlogPost; index: nu
           <p className="line-clamp-2 text-sm text-muted-foreground">{post.excerpt}</p>
         )}
 
-        <div className="mt-auto flex items-center justify-between pt-3 text-xs text-muted-foreground border-t border-border">
-          <span className="flex items-center gap-1.5">
-            <CalendarDays className="h-3.5 w-3.5" /> {date}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5" /> {post.read_time} min read
-          </span>
+        <div className="mt-auto space-y-2 pt-3 border-t border-border">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="h-3.5 w-3.5" /> {date}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="h-3.5 w-3.5" /> {post.read_time} min read
+            </span>
+          </div>
+          <div className="flex justify-end">
+            <ShareButtons title={post.title} url={`/blog/${post.slug}`} />
+          </div>
         </div>
       </div>
     </motion.article>

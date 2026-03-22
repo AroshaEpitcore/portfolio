@@ -4,6 +4,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ArrowLeft, Clock, CalendarDays } from "lucide-react";
 import { BlogContent } from "./blog-content";
+import { ReadingProgress } from "@/components/blog/reading-progress";
+import { ShareButtons } from "@/components/blog/share-buttons";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -41,53 +43,71 @@ export default async function BlogPostPage({ params }: Props) {
     day: "numeric", month: "long", year: "numeric",
   });
 
+  const postUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/blog/${slug}`;
+
   return (
-    <div className="min-h-screen pb-24 pt-28">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6">
-        {/* Back */}
-        <Link href="/blog"
-          className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to Blog
-        </Link>
+    <>
+      <ReadingProgress />
 
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
-            {post.tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                {tag}
+      <div className="min-h-screen pb-24 pt-28">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+          {/* Back */}
+          <Link href="/blog"
+            className="mb-8 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" /> Back to Blog
+          </Link>
+
+          {/* Tags */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-2">
+              {post.tags.map((tag) => (
+                <span key={tag} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Title */}
+          <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl">{post.title}</h1>
+
+          {/* Meta + Share */}
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-6">
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CalendarDays className="h-4 w-4" /> {date}
               </span>
-            ))}
+              <span className="flex items-center gap-1.5">
+                <Clock className="h-4 w-4" /> {post.read_time} min read
+              </span>
+            </div>
+            <ShareButtons title={post.title} url={postUrl} />
           </div>
-        )}
 
-        {/* Title */}
-        <h1 className="mb-4 text-3xl font-bold leading-tight sm:text-4xl">{post.title}</h1>
+          {/* Thumbnail */}
+          {post.thumbnail_url && (
+            <div className="mb-10 overflow-hidden rounded-2xl">
+              <img src={post.thumbnail_url} alt={post.title} className="w-full object-cover" />
+            </div>
+          )}
 
-        {/* Meta */}
-        <div className="mb-8 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
-          <span className="flex items-center gap-1.5">
-            <CalendarDays className="h-4 w-4" /> {date}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" /> {post.read_time} min read
-          </span>
+          {/* Content */}
+          {post.content ? (
+            <BlogContent content={post.content} />
+          ) : (
+            <p className="text-muted-foreground">No content yet.</p>
+          )}
+
+          {/* Bottom share */}
+          <div className="mt-12 flex items-center justify-between border-t border-border pt-8">
+            <Link href="/blog"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" /> Back to Blog
+            </Link>
+            <ShareButtons title={post.title} url={postUrl} />
+          </div>
         </div>
-
-        {/* Thumbnail */}
-        {post.thumbnail_url && (
-          <div className="mb-10 overflow-hidden rounded-2xl">
-            <img src={post.thumbnail_url} alt={post.title} className="w-full object-cover" />
-          </div>
-        )}
-
-        {/* Content */}
-        {post.content ? (
-          <BlogContent content={post.content} />
-        ) : (
-          <p className="text-muted-foreground">No content yet.</p>
-        )}
       </div>
-    </div>
+    </>
   );
 }

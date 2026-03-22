@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Wand2, Timer } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Input, Textarea, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { MarkdownEditor } from "@/components/admin/markdown-editor";
+import { extractTagsFromContent, estimateReadTime } from "@/lib/blog-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { BlogPost } from "@/types/database";
 
@@ -160,13 +161,30 @@ export default function EditBlogPostPage({ params }: { params: Promise<{ id: str
             <CardHeader><CardTitle className="text-base">Tags & Settings</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>Tags</Label>
-                <Input className="mt-1" placeholder="Next.js, React, Tutorial" {...register("tags")} />
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Tags</Label>
+                  <button type="button" onClick={() => {
+                    const tags = extractTagsFromContent(contentValue);
+                    if (tags.length) setValue("tags", tags.join(", "));
+                    else toast.info("No tech keywords detected in content");
+                  }} className="flex items-center gap-1 text-[10px] text-primary hover:underline">
+                    <Wand2 className="h-3 w-3" /> Auto-detect
+                  </button>
+                </div>
+                <Input placeholder="Next.js, React, Tutorial" {...register("tags")} />
                 <p className="mt-1 text-xs text-muted-foreground">Comma-separated</p>
               </div>
               <div>
-                <Label>Read Time (minutes)</Label>
-                <Input className="mt-1" type="number" min={1} max={120} {...register("read_time")} />
+                <div className="flex items-center justify-between mb-1">
+                  <Label>Read Time (minutes)</Label>
+                  <button type="button" onClick={() => {
+                    const mins = estimateReadTime(contentValue);
+                    setValue("read_time", mins);
+                  }} className="flex items-center gap-1 text-[10px] text-primary hover:underline">
+                    <Timer className="h-3 w-3" /> Estimate
+                  </button>
+                </div>
+                <Input type="number" min={1} max={120} {...register("read_time")} />
               </div>
               <div className="space-y-2 pt-1">
                 <Label className="text-sm font-medium">Visibility</Label>
