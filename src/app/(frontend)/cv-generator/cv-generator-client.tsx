@@ -633,79 +633,12 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
         </div>
       </div>
 
-      {/* Form */}
-      <div className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
+      {/* Two-column layout */}
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
 
-        {/* ── CV Style ── */}
-        {!showSample && (
-          <Card>
-            <SectionHeader icon={FileText} label="CV Style" />
-            <div className="space-y-5">
-              {/* Font family */}
-              <div>
-                <FieldLabel>Font Family</FieldLabel>
-                <div className="mt-2 flex flex-wrap gap-3">
-                  {FONT_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      onClick={() => setData((d) => ({ ...d, styles: { ...d.styles, fontFamily: opt.key } }))}
-                      className={`flex flex-col items-start rounded-xl border-2 px-5 py-3 transition-all ${
-                        data.styles.fontFamily === opt.key
-                          ? "border-primary bg-primary/5 shadow-sm"
-                          : "border-border hover:border-primary/40"
-                      }`}
-                    >
-                      <span className="text-base font-semibold" style={{ fontFamily: opt.stack }}>
-                        {opt.label}
-                      </span>
-                      <span className="text-xs text-muted-foreground">{opt.sub}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Accent color */}
-              <div>
-                <FieldLabel>Accent Color</FieldLabel>
-                <div className="mt-2 flex flex-wrap gap-3">
-                  {COLOR_OPTIONS.map((c) => (
-                    <button
-                      key={c.color}
-                      type="button"
-                      title={c.label}
-                      onClick={() => setData((d) => ({ ...d, styles: { ...d.styles, accentColor: c.color } }))}
-                      className={`flex h-9 w-9 items-center justify-center rounded-full ring-offset-2 transition-all ${
-                        data.styles.accentColor === c.color ? "ring-2 ring-offset-background" : "hover:scale-110"
-                      }`}
-                      style={{
-                        backgroundColor: c.color,
-                        outline: data.styles.accentColor === c.color ? `2px solid ${c.color}` : "none",
-                        outlineOffset: "3px",
-                      }}
-                    >
-                      {data.styles.accentColor === c.color && (
-                        <svg viewBox="0 0 20 20" fill="white" className="h-4 w-4">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-                {/* Live preview strip */}
-                <div className="mt-4 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/20 px-4 py-3">
-                  <div className="h-5 w-1.5 rounded-full" style={{ backgroundColor: data.styles.accentColor }} />
-                  <div>
-                    <p className="text-xs font-semibold" style={{ color: data.styles.accentColor }}>
-                      {COLOR_OPTIONS.find((c) => c.color === data.styles.accentColor)?.label ?? "Custom"} · {FONT_OPTIONS.find((f) => f.key === data.styles.fontFamily)?.label} Font
-                    </p>
-                    <p className="text-xs text-muted-foreground">This accent color and font will appear in your CV headings, section labels, and highlights.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
+          {/* ── LEFT: Form ── */}
+          <div className="min-w-0 flex-1 space-y-6">
 
         {/* ── Personal Info ── */}
         <Card>
@@ -1364,7 +1297,7 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
           )}
         </Card>
 
-        {/* ── Generate button (bottom) ── */}
+        {/* ── Generate button (bottom of left col) ── */}
         <div className="flex justify-end pb-8">
           <Button
             onClick={handleGenerate}
@@ -1380,7 +1313,153 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             {isLimited ? "Unlock for Rs. 250" : "Download My CV as PDF"}
           </Button>
         </div>
-      </div>
-    </div>
+        </div> {/* end left col */}
+
+        {/* ── RIGHT: Sticky Style Panel ── */}
+        <div className="w-72 shrink-0 space-y-4 lg:sticky lg:top-24">
+          <Card>
+            <h3 className="mb-4 text-sm font-semibold text-foreground">CV Style</h3>
+
+            {/* Font family */}
+            <div className="mb-5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Font Family
+              </p>
+              <div className="space-y-2">
+                {FONT_OPTIONS.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() =>
+                      !showSample &&
+                      setData((d) => ({
+                        ...d,
+                        styles: { ...d.styles, fontFamily: f.key },
+                      }))
+                    }
+                    className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      data.styles.fontFamily === f.key
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40 hover:bg-muted/30"
+                    }`}
+                  >
+                    <span
+                      style={{ fontFamily: f.stack }}
+                      className="w-8 text-center text-base font-bold"
+                    >
+                      Aa
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold">{f.label}</p>
+                      <p className="text-[10px] text-muted-foreground">{f.sub}</p>
+                    </div>
+                    {data.styles.fontFamily === f.key && (
+                      <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Accent color */}
+            <div>
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                Accent Color
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {COLOR_OPTIONS.map((c) => (
+                  <button
+                    key={c.color}
+                    type="button"
+                    title={c.label}
+                    onClick={() =>
+                      !showSample &&
+                      setData((d) => ({
+                        ...d,
+                        styles: { ...d.styles, accentColor: c.color },
+                      }))
+                    }
+                    className={`relative h-9 w-full rounded-lg transition-all hover:scale-105 ${
+                      data.styles.accentColor === c.color
+                        ? "ring-2 ring-offset-2 ring-offset-background"
+                        : ""
+                    }`}
+                    style={{
+                      backgroundColor: c.color,
+                      ...(data.styles.accentColor === c.color
+                        ? { outlineColor: c.color }
+                        : {}),
+                    }}
+                  >
+                    {data.styles.accentColor === c.color && (
+                      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-white">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p
+                className="mt-2 text-center text-[10px] font-medium"
+                style={{ color: data.styles.accentColor }}
+              >
+                {COLOR_OPTIONS.find((c) => c.color === data.styles.accentColor)?.label ?? "Custom"}
+              </p>
+            </div>
+
+            {/* Mini preview */}
+            <div className="mt-5 rounded-lg border border-border/60 bg-background p-3">
+              <p className="mb-2 text-[10px] text-muted-foreground">Preview</p>
+              <div
+                className="border-l-2 pl-2"
+                style={{ borderColor: data.styles.accentColor }}
+              >
+                <p
+                  className="text-[11px] font-bold"
+                  style={{
+                    fontFamily: FONT_OPTIONS.find((f) => f.key === data.styles.fontFamily)?.stack,
+                    color: data.styles.accentColor,
+                  }}
+                >
+                  Your Name
+                </p>
+                <p
+                  className="text-[9px] text-muted-foreground"
+                  style={{
+                    fontFamily: FONT_OPTIONS.find((f) => f.key === data.styles.fontFamily)?.stack,
+                  }}
+                >
+                  Job Title
+                </p>
+                <p
+                  className="mt-1 text-[9px] text-muted-foreground"
+                  style={{
+                    fontFamily: FONT_OPTIONS.find((f) => f.key === data.styles.fontFamily)?.stack,
+                  }}
+                >
+                  Experience · Education · Skills
+                </p>
+              </div>
+            </div>
+
+            {/* Sticky generate CTA */}
+            <Button
+              onClick={handleGenerate}
+              disabled={generating}
+              className="mt-5 w-full gap-2 bg-gradient-to-r from-primary to-accent text-white hover:opacity-90"
+            >
+              {generating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {isLimited ? "Unlock — Rs. 250" : "Download PDF"}
+            </Button>
+          </Card>
+        </div> {/* end right col */}
+
+      </div> {/* end flex row */}
+    </div> {/* end max-w-7xl */}
+  </div> {/* end min-h-screen */}
   );
 }
