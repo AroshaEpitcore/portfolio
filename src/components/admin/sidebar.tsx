@@ -88,6 +88,11 @@ const navItems = [
     icon: Users,
   },
   {
+    name: "Users",
+    href: "/admin/users",
+    icon: Users,
+  },
+  {
     name: "CV Users",
     href: "/admin/cv-users",
     icon: FileText,

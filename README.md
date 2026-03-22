@@ -76,7 +76,8 @@ src/
 │   │   ├── blog/                      # Blog CRUD (list, new, [id] edit)
 │   │   ├── social/                    # Social links management
 │   │   ├── contact/                   # Contact info + submission inbox
-│   │   └── cv-users/                  # CV Generator user management (mark paid / revoke)
+│   │   ├── cv-users/                  # CV Generator user management (mark paid / revoke)
+│   │   └── users/                     # Full user CRUD — mark paid, revoke, reset generations, delete
 │   ├── sitemap.ts                     # Auto-generated sitemap.xml (static + projects + blog)
 │   ├── robots.ts                      # robots.txt (blocks /admin and /api)
 │   └── api/
@@ -86,7 +87,7 @@ src/
 ├── components/
 │   ├── admin/
 │   │   ├── header.tsx                 # Admin header (real user email, logout)
-│   │   ├── sidebar.tsx                # Admin nav sidebar (collapsible), includes CV Users link
+│   │   ├── sidebar.tsx                # Admin nav sidebar (collapsible), includes Users + CV Users links
 │   │   ├── image-upload.tsx           # Reusable Supabase Storage image uploader
 │   │   ├── stats-cards.tsx            # Dashboard stat cards
 │   │   └── data-table.tsx             # Generic data table
@@ -147,9 +148,10 @@ src/
 - Error/success messages shown as top-right Sonner toasts (matches admin style)
 
 ### Admin Dashboard
-- Protected by middleware — only authenticated Supabase users can access `/admin/*`
+- Protected by middleware — only the admin email (`mgaravishan@gmail.com`) can access `/admin/*`; other authenticated users (CV generator users) are redirected to `/admin/login`
 - Full CRUD for all content types
-- **CV Users page** — view all registered CV generator users, generations used, paid status; one-click Mark Paid / Revoke buttons
+- **Users page** (`/admin/users`) — comprehensive user management with sortable table, search, filter by status, per-row actions: Mark Paid, Revoke, Reset Generations (with confirm dialog), Delete (with confirm dialog), and a slide-in detail drawer
+- **CV Users page** (`/admin/cv-users`) — simpler view with Mark Paid / Revoke buttons only
 - Image uploads to Supabase Storage
 - Contact submission inbox with read/unread tracking
 
@@ -571,7 +573,30 @@ CREATE POLICY "Auth full access cv_generations"
 
 ---
 
-### SQL 11 — Supabase Storage Bucket (Image Uploads)
+### SQL 11 — RLS Policies for User Deletion (Admin Users Page)
+
+The `/admin/users` page can delete a user's CV history and then the user record itself. The policies below allow the authenticated admin to delete from both tables.
+
+> If you already ran SQL 10, the `"Auth full access cv_users"` and `"Auth full access cv_generations"` policies cover `DELETE` — **skip this block**. Only run it if you need to add delete policies separately.
+
+```sql
+-- Allow authenticated admin to delete cv_generations rows (runs before cv_users delete)
+CREATE POLICY "Auth delete cv_generations"
+  ON cv_generations FOR DELETE
+  USING (auth.role() = 'authenticated');
+
+-- Allow authenticated admin to delete cv_users rows
+CREATE POLICY "Auth delete cv_users"
+  ON cv_users FOR DELETE
+  USING (auth.role() = 'authenticated');
+```
+
+> The Users page deletes `cv_generations` first (to satisfy the FK constraint), then deletes the `cv_users` row.
+> The `auth.users` entry in Supabase Auth is **not** deleted — only the app-level records are removed.
+
+---
+
+### SQL 12 — Supabase Storage Bucket (Image Uploads)
 
 ```sql
 -- Create public storage bucket named 'portfolio'
@@ -988,8 +1013,10 @@ export const FREE_GENERATIONS = 2; // Change to adjust free tier
 
 | Path | Protection |
 |---|---|
-| `/admin/*` | Redirects to `/admin/login` if no active Supabase session |
+| `/admin/*` | Redirects to `/admin/login` unless logged in **with the admin email** (`ADMIN_EMAIL` env var, defaults to `mgaravishan@gmail.com`) |
 | `/cv-generator` | Redirects to `/auth/login?from=/cv-generator` if not logged in |
+
+CV generator users are authenticated Supabase users but are **not** the admin email — they can use `/cv-generator` but are blocked from `/admin/*`.
 
 The middleware also refreshes Supabase auth tokens on every request (required for SSR cookie sessions).
 
@@ -1036,7 +1063,8 @@ The middleware also refreshes Supabase auth tokens on every request (required fo
 | `/admin/blog/[id]` | `blog_posts` (UPDATE) |
 | `/admin/social` | `social_links` |
 | `/admin/contact` | `contact_info` + `contact_submissions` |
-| `/admin/cv-users` | `cv_users` — view all users, mark paid, revoke access |
+| `/admin/users` | `cv_users` + `cv_generations` — full CRUD: mark paid, revoke, reset generations, delete user + all their CV history |
+| `/admin/cv-users` | `cv_users` — simplified view: mark paid, revoke access |
 
 ---
 
@@ -1132,6 +1160,8 @@ When you need to add a new table/section in future:
 - `cv_users.id` must equal `auth.users.id` — the upsert in `/api/cv/generate` handles creation automatically on first use
 - The `achievements-section.tsx` component returns `null` if the achievements array is empty — safe to leave the table empty until you add entries
 - The `testimonials-section.tsx` component returns `null` if the testimonials array is empty — safe to leave the table empty
+- Admin identity is determined by email: middleware checks `user.email === process.env.ADMIN_EMAIL` (defaults to `mgaravishan@gmail.com`) — CV generator users are blocked from `/admin/*` even though they are authenticated
+- The `/admin/users` page provides full CRUD: Mark Paid, Revoke, Reset Generations, and Delete. Delete removes `cv_generations` first (FK), then `cv_users`. The `auth.users` Supabase Auth entry is NOT deleted automatically
 - All admin write operations use the browser Supabase client with the anon key — access is granted via RLS `auth.role() = 'authenticated'` policies, NOT the service role key
 - The service role key (`SUPABASE_SERVICE_ROLE_KEY`) bypasses RLS entirely — only used server-side in `createServiceClient()` when needed
 - `NEXT_PUBLIC_SITE_URL` must be set to your production domain for `sitemap.xml` and `robots.txt` to generate correct URLs
