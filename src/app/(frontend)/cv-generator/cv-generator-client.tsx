@@ -542,6 +542,52 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
         {showPayment && <PaymentModal onClose={() => setShowPayment(false)} />}
       </AnimatePresence>
 
+      {/* Toast notifications */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        <AnimatePresence>
+          {successMsg && (
+            <motion.div
+              key="success"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="flex items-center gap-3 rounded-xl border border-green-500/20 bg-card px-4 py-3 shadow-xl shadow-black/10"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-500/10">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              </div>
+              <p className="text-sm font-medium text-foreground">{successMsg}</p>
+              <button
+                onClick={() => setSuccessMsg("")}
+                className="ml-2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          )}
+          {genError && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="flex items-center gap-3 rounded-xl border border-red-500/20 bg-card px-4 py-3 shadow-xl shadow-black/10"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500/10">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+              </div>
+              <p className="text-sm font-medium text-foreground">{genError}</p>
+              <button
+                onClick={() => setGenError("")}
+                className="ml-2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Page header */}
       <div className="border-b border-border/50 bg-card/50">
         <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
@@ -600,27 +646,6 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
             </div>
           </div>
 
-          {/* Status messages */}
-          {successMsg && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-3 flex items-center gap-2 rounded-lg bg-green-500/10 px-3 py-2 text-sm text-green-600 dark:text-green-400"
-            >
-              <CheckCircle className="h-4 w-4" />
-              {successMsg}
-            </motion.div>
-          )}
-          {genError && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mt-3 flex items-center gap-2 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-600 dark:text-red-400"
-            >
-              <AlertCircle className="h-4 w-4" />
-              {genError}
-            </motion.div>
-          )}
 
           {/* Sample mode banner */}
           {showSample && (
