@@ -9,6 +9,7 @@ import { ShareButton } from "@/components/ui/share-button";
 
 interface Props {
   achievements?: Achievement[];
+  hideHeader?: boolean;
 }
 
 const categoryConfig: Record<string, { color: string; bg: string; border: string; label: string }> = {
@@ -76,7 +77,7 @@ function AchievementCard({ item, index }: { item: Achievement; index: number }) 
         {/* Images */}
         {images.length > 0 && (
           <div
-            className="relative cursor-zoom-in overflow-hidden"
+            className="relative cursor-zoom-in overflow-hidden rounded-t-2xl"
             onClick={() => setLightbox(0)}
           >
             <img
@@ -181,7 +182,7 @@ function AchievementCard({ item, index }: { item: Achievement; index: number }) 
   );
 }
 
-export function AchievementsSection({ achievements }: Props) {
+export function AchievementsSection({ achievements, hideHeader = false }: Props) {
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   if (!achievements || achievements.length === 0) return null;
@@ -199,26 +200,28 @@ export function AchievementsSection({ achievements }: Props) {
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-12 text-center"
-        >
-          <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-            <Trophy className="h-4 w-4" />
-            Achievements & Certifications
-          </span>
-          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-            What I&apos;ve{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Accomplished
+        {!hideHeader && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
+              <Trophy className="h-4 w-4" />
+              Achievements & Certifications
             </span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-            Certifications, awards, and milestones from my professional journey.
-          </p>
-        </motion.div>
+            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+              What I&apos;ve{" "}
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Accomplished
+              </span>
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+              Certifications, awards, and milestones from my professional journey.
+            </p>
+          </motion.div>
+        )}
 
         {/* Filter tabs */}
         {filters.length > 2 && (

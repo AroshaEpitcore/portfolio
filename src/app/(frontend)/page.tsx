@@ -33,6 +33,7 @@ async function getData() {
         supabase
           .from("testimonials")
           .select("*")
+          .eq("is_featured", true)
           .order("order_index", { ascending: true }),
         getGitHubRepos(),
         supabase.from("achievements").select("*").order("order_index", { ascending: true }),
@@ -74,6 +75,7 @@ export default async function HomePage() {
         bio={profile?.bio || undefined}
         resumeUrl={profile?.resume_url || undefined}
         heroImageUrl={profile?.avatar_url || undefined}
+        isAvailable={profile?.is_available ?? true}
       />
       <CurrentlySection />
       <AboutPreview

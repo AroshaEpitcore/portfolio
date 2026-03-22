@@ -75,6 +75,7 @@ interface HeroProps {
   bio?: string;
   resumeUrl?: string;
   heroImageUrl?: string;
+  isAvailable?: boolean;
 }
 
 export function Hero({
@@ -83,6 +84,7 @@ export function Hero({
   bio = "I build beautiful, performant, and accessible web experiences using modern technologies.",
   resumeUrl,
   heroImageUrl = "/me.png",
+  isAvailable = true,
 }: HeroProps) {
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
@@ -113,20 +115,22 @@ export function Hero({
             {/* Left Side - Content */}
             <div className="order-2 lg:order-1 text-center lg:text-left">
               {/* Greeting Badge */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-                className="mb-6"
-              >
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 text-sm font-medium backdrop-blur-sm">
-                  <span className="relative flex h-2.5 w-2.5">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+              {isAvailable && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="mb-6"
+                >
+                  <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-5 py-2.5 text-sm font-medium backdrop-blur-sm">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                    </span>
+                    <span className="text-foreground">Available for work</span>
                   </span>
-                  <span className="text-foreground">Available for work</span>
-                </span>
-              </motion.div>
+                </motion.div>
+              )}
 
               {/* Name */}
               <motion.h1
@@ -276,13 +280,15 @@ export function Hero({
               <div className="absolute h-[340px] w-[340px] sm:h-[410px] sm:w-[410px] rounded-full pointer-events-none orbit-8s-delay">
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-2 rounded-full bg-accent/80 shadow-lg shadow-primary/50" /></div>
 
-              <div className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10 animate-float-down">
-                <span className="text-lg">✨</span>
-                <div className="text-xs">
-                  <p className="font-semibold text-foreground">Available</p>
-                  <p className="text-muted-foreground">for work</p>
+              {isAvailable && (
+                <div className="absolute -right-4 bottom-1/4 z-20 flex items-center gap-2 rounded-2xl border border-accent/30 bg-card/80 px-3 py-2 backdrop-blur-md shadow-lg shadow-accent/10 animate-float-down">
+                  <span className="text-lg">✨</span>
+                  <div className="text-xs">
+                    <p className="font-semibold text-foreground">Available</p>
+                    <p className="text-muted-foreground">for work</p>
+                  </div>
                 </div>
-              </div>
+              )}
             </motion.div>
           </div>
         </div>

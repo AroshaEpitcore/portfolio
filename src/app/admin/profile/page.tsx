@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Save, Loader2, User, FileText } from "lucide-react";
+import { Save, Loader2, User, FileText, Wifi, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea, Label } from "@/components/ui/input";
@@ -30,6 +30,8 @@ export default function AdminProfilePage() {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [togglingAvailability, setTogglingAvailability] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
@@ -42,6 +44,7 @@ export default function AdminProfilePage() {
     if (data) {
       setProfile(data);
       setAvatarUrl(data.avatar_url || null);
+      setIsAvailable(data.is_available ?? true);
       reset({
         name: data.name || "",
         title: data.title || "",
@@ -66,9 +69,9 @@ export default function AdminProfilePage() {
 
     let error;
     if (profile) {
-      ({ error } = await supabase.from("profiles").update(updateData).eq("id", profile.id));
+      ({ error } = await supabase.from("profiles").update({ ...updateData, is_available: isAvailable }).eq("id", profile.id));
     } else {
-      ({ error } = await supabase.from("profiles").insert(updateData));
+      ({ error } = await supabase.from("profiles").insert({ ...updateData, is_available: isAvailable }));
     }
 
     if (error) {
@@ -78,6 +81,20 @@ export default function AdminProfilePage() {
       fetchProfile();
     }
     setIsSubmitting(false);
+  };
+
+  const toggleAvailability = async () => {
+    if (!profile) return;
+    setTogglingAvailability(true);
+    const newValue = !isAvailable;
+    const { error } = await supabase.from("profiles").update({ is_available: newValue }).eq("id", profile.id);
+    if (error) {
+      toast.error("Failed to update availability", { description: error.message });
+    } else {
+      setIsAvailable(newValue);
+      toast.success(newValue ? "You are now shown as available for work" : "Availability badge hidden");
+    }
+    setTogglingAvailability(false);
   };
 
   if (loading) {
@@ -132,6 +149,42 @@ export default function AdminProfilePage() {
             <CardContent>
               <Textarea placeholder="Tell visitors about yourself..." rows={6} {...register("bio")} />
               {errors.bio && <p className="mt-1 text-sm text-red-500">{errors.bio.message}</p>}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Availability Toggle */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}>
+          <Card className={isAvailable ? "border-green-500/30 bg-green-500/5" : "border-border"}>
+            <CardContent className="flex items-center justify-between p-5">
+              <div className="flex items-center gap-3">
+                {isAvailable
+                  ? <Wifi className="h-5 w-5 text-green-500" />
+                  : <WifiOff className="h-5 w-5 text-muted-foreground" />
+                }
+                <div>
+                  <p className="font-medium text-sm">Open to Work</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isAvailable ? "\"Available for work\" badge is visible on the homepage" : "Badge is hidden — visitors see you as unavailable"}
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant={isAvailable ? "default" : "outline"}
+                size="sm"
+                onClick={toggleAvailability}
+                disabled={togglingAvailability || !profile}
+                className={`gap-2 ${isAvailable ? "bg-green-600 hover:bg-green-700 text-white border-0" : ""}`}
+              >
+                {togglingAvailability
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : isAvailable
+                    ? <Wifi className="h-3.5 w-3.5" />
+                    : <WifiOff className="h-3.5 w-3.5" />
+                }
+                {isAvailable ? "Available" : "Not Available"}
+              </Button>
             </CardContent>
           </Card>
         </motion.div>

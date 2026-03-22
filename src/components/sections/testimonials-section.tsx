@@ -2,7 +2,9 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, MessageSquarePlus } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import type { Testimonial } from "@/types/database";
 
 interface TestimonialsSectionProps {
@@ -29,6 +31,14 @@ export function TestimonialsSection({ testimonials }: TestimonialsSectionProps) 
           </span>
           <h2 className="mt-4 text-3xl font-bold sm:text-4xl">What Clients Say</h2>
           <p className="mt-3 text-muted-foreground">Feedback from people I&apos;ve worked with</p>
+          <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            transition={{ delay: 0.3 }} className="mt-5">
+            <Link href="/testimonials">
+              <Button variant="outline" size="sm" className="gap-2">
+                <MessageSquarePlus className="h-4 w-4" /> Leave a Review
+              </Button>
+            </Link>
+          </motion.div>
         </motion.div>
 
         <div className={`grid gap-6 ${
