@@ -37,7 +37,10 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Please create an account or log in to generate your CV." },
+        { status: 401 }
+      );
     }
 
     const cvData: CVFormData = await request.json();

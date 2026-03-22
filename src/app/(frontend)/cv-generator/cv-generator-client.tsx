@@ -493,6 +493,15 @@ export function CVGeneratorClient({ user, cvUser }: Props) {
         body: JSON.stringify(showSample ? sampleData : data),
       });
 
+      if (res.status === 401) {
+        toast.error("Login required", {
+          description: "Please create an account or log in to generate your CV.",
+          action: { label: "Log in", onClick: () => window.location.href = "/auth/login?from=/cv-generator" },
+          duration: 6000,
+        });
+        setGenerating(false);
+        return;
+      }
       if (res.status === 402) {
         setShowPayment(true);
         setGenerating(false);
