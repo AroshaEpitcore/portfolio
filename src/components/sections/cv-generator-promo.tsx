@@ -51,7 +51,6 @@ const features = [
 ];
 
 const highlights = [
-  "Free account required to get started",
   "2 free generations included",
   "Works on any device",
   "Real-time PDF preview",
